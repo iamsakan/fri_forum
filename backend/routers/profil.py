@@ -61,13 +61,15 @@ def get_profil(id: str):
         .execute()
     
     komentarji = supabase.table("komentar")\
-        .select("*")\
+        .select("*, objava(naslov)")\
         .eq("avtor_id", id)\
+        .order("cas", desc=True)\
         .execute()
     
     return {
         "profil": profil.data,
         "objave": objave.data,
+        "komentarji": komentarji.data,
         "st_objav": len(objave.data),
         "st_komentarjev": len(komentarji.data)
     }
