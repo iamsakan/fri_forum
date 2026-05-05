@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from database import supabase
 
 router = APIRouter(prefix="/objave", tags=["objave"])
@@ -9,13 +9,15 @@ class NovaObjava(BaseModel):
     vsebina: str
     kategorija_id: int
 
-    @validator("naslov")
+    @field_validator("naslov")
+    @classmethod
     def preveri_naslov(cls, v):
         if len(v.strip()) < 3:
             raise ValueError("Naslov mora imeti vsaj 3 znake")
         return v
 
-    @validator("vsebina")
+    @field_validator("vsebina")
+    @classmethod
     def preveri_vsebino(cls, v):
         if len(v.strip()) < 10:
             raise ValueError("Vsebina mora imeti vsaj 10 znakov")

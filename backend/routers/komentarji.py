@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from database import supabase
 
 router = APIRouter(prefix="/komentarji", tags=["komentarji"])
@@ -8,7 +8,8 @@ class NovKomentar(BaseModel):
     vsebina: str
     objava_id: int
 
-    @validator("vsebina")
+    @field_validator("vsebina")
+    @classmethod
     def preveri_vsebino(cls, v):
         if len(v.strip()) < 2:
             raise ValueError("Komentar mora imeti vsaj 2 znaka")
