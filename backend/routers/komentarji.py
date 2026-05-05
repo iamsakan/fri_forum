@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, field_validator
 from database import supabase
+from dependencies import get_current_user
 
 router = APIRouter(prefix="/komentarji", tags=["komentarji"])
 
@@ -18,21 +19,28 @@ class NovKomentar(BaseModel):
 @router.get("/{objava_id}")
 def get_komentarji(objava_id: int):
     result = supabase.table("komentar")\
-        .select("*")\
+        .select("*, profil(uporabnisko_ime)")\
         .eq("objava_id", objava_id)\
         .order("cas", desc=False)\
         .execute()
     return result.data
 
 @router.post("/")
-def dodaj_komentar(komentar: NovKomentar):
+def dodaj_komentar(komentar: NovKomentar, current_user=Depends(get_current_user)):
     result = supabase.table("komentar").insert({
         "vsebina": komentar.vsebina,
-        "objava_id": komentar.objava_id
+        "objava_id": komentar.objava_id,
+        "avtor_id": current_user.id
     }).execute()
     return result.data[0]
 
 @router.delete("/{id}")
-def izbrisi_komentar(id: int):
+def izbrisi_komentar(id: int, current_user=Depends(get_current_user)):
+    obstojen = supabase.table("komentar").select("avtor_id").eq("id", id).single().execute()
+    if not obstojen.data:
+        raise HTTPException(status_code=404, detail="Komentar ne obstaja")
+    if obstojen.data["avtor_id"] != current_user.id:
+        raise HTTPException(status_code=403, detail="Nimate dovoljenja za brisanje tega komentarja")
+    
     supabase.table("komentar").delete().eq("id", id).execute()
     return {"sporocilo": "Komentar izbrisan"}
