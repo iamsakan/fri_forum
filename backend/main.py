@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from database import supabase
-from routers import objave, komentarji, glasovi, profil, auth, admin, prijave
+from routers import objave, komentarji, glasovi, profil, auth, admin, prijave, priloge, priloge_komentarjev
 
 security = HTTPBearer()
 
@@ -25,7 +25,9 @@ app.include_router(komentarji.router)
 app.include_router(glasovi.router)
 app.include_router(profil.router)
 app.include_router(admin.router)
-app.include_router(prijave.router)  
+app.include_router(prijave.router)
+app.include_router(priloge.router)
+app.include_router(priloge_komentarjev.router)
 
 @app.get("/")
 def root():
