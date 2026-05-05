@@ -8,6 +8,7 @@ router = APIRouter(prefix="/komentarji", tags=["komentarji"])
 class NovKomentar(BaseModel):
     vsebina: str
     objava_id: int
+    stars_id: int = None  # None = glavni komentar, int = odgovor na komentar
 
     @field_validator("vsebina")
     @classmethod
@@ -18,19 +19,49 @@ class NovKomentar(BaseModel):
 
 @router.get("/{objava_id}")
 def get_komentarji(objava_id: int):
+    # Dobimo vse komentarje za objavo
     result = supabase.table("komentar")\
         .select("*, profil(uporabnisko_ime)")\
         .eq("objava_id", objava_id)\
         .order("cas", desc=False)\
         .execute()
-    return result.data
+    
+    komentarji = result.data
+    
+    # Sestavimo drevo komentarjev
+    glavni = []
+    slovar = {}
+    
+    for k in komentarji:
+        k["odgovori"] = []
+        slovar[k["id"]] = k
+    
+    for k in komentarji:
+        if k["stars_id"] is None:
+            glavni.append(k)
+        else:
+            stars = slovar.get(k["stars_id"])
+            if stars:
+                stars["odgovori"].append(k)
+    
+    return glavni
 
 @router.post("/")
 def dodaj_komentar(komentar: NovKomentar, current_user=Depends(get_current_user)):
+    # Če je odgovor, preveri da starš obstaja
+    if komentar.stars_id:
+        stars = supabase.table("komentar")\
+            .select("id")\
+            .eq("id", komentar.stars_id)\
+            .execute()
+        if not stars.data:
+            raise HTTPException(status_code=404, detail="Starševski komentar ne obstaja")
+    
     result = supabase.table("komentar").insert({
         "vsebina": komentar.vsebina,
         "objava_id": komentar.objava_id,
-        "avtor_id": current_user.id
+        "avtor_id": current_user.id,
+        "stars_id": komentar.stars_id
     }).execute()
     return result.data[0]
 
