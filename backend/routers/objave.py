@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel, field_validator
 from database import supabase
 from dependencies import get_current_user, security
@@ -25,21 +25,50 @@ class NovaObjava(BaseModel):
         return v
 
 @router.get("/")
-def get_objave(kategorija_id: int = None, q: str = None):
+def get_objave(
+    kategorija_id: int = Query(None),
+    q: str = Query(None),
+    sort: str = Query("new"),
+    page: int = Query(1),
+    limit: int = Query(10)
+):
     query = supabase.table("objava")\
-        .select("*, kategorija(naziv, barva), profil(uporabnisko_ime)")\
-        .order("cas_objave", desc=True)
+        .select("*, kategorija(naziv, barva), profil(uporabnisko_ime), glas(tip)")
     
     # Filtriranje po kategoriji
     if kategorija_id:
         query = query.eq("kategorija_id", kategorija_id)
     
-    # Iskanje po naslovu
+    # Iskanje po naslovu in vsebini
     if q:
-        query = query.ilike("naslov", f"%{q}%")
+        query = query.or_(f"naslov.ilike.%{q}%,vsebina.ilike.%{q}%")
+    
+    # limit prikazanih objav in paginacija
+    start = (page - 1) * limit
+    end = start + limit - 1
+    query = query.range(start, end)
+    
+    # Sortiranje
+    if sort == "new":
+        query = query.order("cas_objave", desc=True)
+    elif sort == "top":
+        query = query.order("st_seckov", desc=True)
     
     result = query.execute()
-    return result.data
+    
+    objave = result.data
+    for objava in objave:
+        glasovi = objava.pop("glas", [])
+        objava["st_upvote"] = sum(1 for g in glasovi if g["tip"] == "up")
+        objava["st_downvote"] = sum(1 for g in glasovi if g["tip"] == "down")
+        objava["skupaj_glasov"] = objava["st_upvote"] - objava["st_downvote"]
+    
+    return {
+        "objave": objave,
+        "page": page,
+        "limit": limit,
+        "ima_vec": len(objave) == limit
+    }
 
 @router.get("/{id}")
 def get_objava(id: int):
