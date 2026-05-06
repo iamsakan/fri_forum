@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 export default function PostCard({ post }) {
     const [votes, setVotes] = useState(post.skupaj_glasov || 0);
-    const [userVote, setUserVote] = useState(null); // 'up' ali 'down'
+    const shranjeniGlasovi = JSON.parse(localStorage.getItem("moji_glasovi") || "{}");
+    const [userVote, setUserVote] = useState(shranjeniGlasovi[String(post.id)] || null);
     const navigate = useNavigate();
 
     const vote = async (tip, e) => {

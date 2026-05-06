@@ -13,14 +13,33 @@ export default function PostPage() {
     const [userVote, setUserVote] = useState(null);
 
     useEffect(() => {
-        fetch(`http://localhost:8000/objave/${id}`)
-            .then(res => res.json())
-            .then(data => {
-                setPost(data);
-                setVotes(data.skupaj_glasov || 0);
-            });
+        const loadAll = async () => {
+            // Najprej glasovi
+            const token = localStorage.getItem("token");
+            if (token) {
+                const resGlasovi = await fetch("http://localhost:8000/glasovi/moji", {
+                    headers: { Authorization: "Bearer " + token }
+                });
+                if (resGlasovi.ok) {
+                    const glasoviData = await resGlasovi.json();
+                    localStorage.setItem("moji_glasovi", JSON.stringify(glasoviData));
+                    setUserVote(glasoviData[String(id)] || null);
+                }
+            }
 
-        refreshKomentarji();
+            // Potem objava
+            const resObjava = await fetch(`http://localhost:8000/objave/${id}`);
+            const objavaData = await resObjava.json();
+            setPost(objavaData);
+            setVotes(objavaData.skupaj_glasov || 0);
+
+            // Komentarji
+            const resKomentarji = await fetch(`http://localhost:8000/komentarji/${id}`);
+            const komentarjiData = await resKomentarji.json();
+            setKomentarji(Array.isArray(komentarjiData) ? komentarjiData : []);
+        };
+
+        loadAll();
     }, [id]);
 
     const refreshKomentarji = async () => {
@@ -220,9 +239,7 @@ function KomentarKomponenta({ komentar, casNazaj, objavaId, refreshKomentarji })
     const [novOdgovor, setNovOdgovor] = useState("");
     const [loading, setLoading] = useState(false);
 
-    // Ne shranjujemo odgovorov lokalno — beremo direktno iz propa!
     const odgovori = komentar.odgovori || [];
-
     const inicialke = komentar.profil?.uporabnisko_ime?.slice(0, 2).toUpperCase() || "??";
 
     const dodajOdgovor = async () => {
@@ -247,7 +264,7 @@ function KomentarKomponenta({ komentar, casNazaj, objavaId, refreshKomentarji })
         if (res.ok) {
             setNovOdgovor("");
             setShowOdgovor(false);
-            await refreshKomentarji(); // posodobi starša → nov prop pride dol
+            await refreshKomentarji();
         }
         setLoading(false);
     };

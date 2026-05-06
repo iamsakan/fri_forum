@@ -21,6 +21,24 @@ export default function Home() {
             .then((data) => setPosts(data.objave || []));
     };
 
+    const fetchMojiGlasovi = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const res = await fetch("http://localhost:8000/glasovi/moji", {
+            headers: { Authorization: "Bearer " + token }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem("moji_glasovi", JSON.stringify(data));
+        }
+    };
+
+    useEffect(() => {
+        fetchKategorije();
+        fetchMojiGlasovi();
+    }, []);
+
     const fetchKategorije = () => {
         fetch("http://localhost:8000/kategorije")
             .then((res) => res.json())
