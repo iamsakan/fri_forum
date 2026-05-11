@@ -16,7 +16,7 @@ export default function PostCard({ post }) {
             return;
         }
 
-        const res = await fetch("http://localhost:8000/glasovi/", {
+        const res = await fetch("https://friforum-production.up.railway.app/glasovi/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

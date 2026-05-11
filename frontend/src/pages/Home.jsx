@@ -12,7 +12,7 @@ export default function Home() {
     const [aktivnaKategorija, setAktivnaKategorija] = useState(null);
 
     const fetchPosts = () => {
-        let url = `http://localhost:8000/objave/?sort=${sort}`;
+        let url = `https://friforum-production.up.railway.app/objave/?sort=${sort}`;
         if (query) url += `&q=${query}`;
         if (aktivnaKategorija) url += `&kategorija_id=${aktivnaKategorija}`;
 
@@ -25,7 +25,7 @@ export default function Home() {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const res = await fetch("http://localhost:8000/glasovi/moji", {
+        const res = await fetch("https://friforum-production.up.railway.app/glasovi/moji", {
             headers: { Authorization: "Bearer " + token }
         });
         if (res.ok) {
@@ -40,7 +40,7 @@ export default function Home() {
     }, []);
 
     const fetchKategorije = () => {
-        fetch("http://localhost:8000/kategorije")
+        fetch("https://friforum-production.up.railway.app/kategorije")
             .then((res) => res.json())
             .then((data) => setKategorije(data));
     };

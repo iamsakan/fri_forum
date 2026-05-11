@@ -8,7 +8,7 @@ export default function CreatePostModal({ open, setOpen, refreshPosts }) {
     const [error, setError] = useState("");
 
     useEffect(() => {
-        fetch("http://localhost:8000/kategorije")
+        fetch("https://friforum-production.up.railway.app/kategorije")
             .then(res => res.json())
             .then(data => setKategorije(data));
     }, []);
@@ -30,7 +30,7 @@ export default function CreatePostModal({ open, setOpen, refreshPosts }) {
 
         const token = localStorage.getItem("token");
 
-        const res = await fetch("http://localhost:8000/objave/", {
+        const res = await fetch("https://friforum-production.up.railway.app/objave/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

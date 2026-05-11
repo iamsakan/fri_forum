@@ -4,7 +4,7 @@ export default function CategoryFilter({ setCategoryId }) {
     const [categories, setCategories] = useState([]);
 
     useEffect(() => {
-        fetch("http://localhost:8000/kategorije")
+        fetch("https://friforum-production.up.railway.app/kategorije")
             .then((res) => res.json())
             .then((data) => setCategories(data));
     }, []);

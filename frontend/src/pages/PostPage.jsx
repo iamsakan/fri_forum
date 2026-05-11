@@ -17,7 +17,7 @@ export default function PostPage() {
             // Najprej glasovi
             const token = localStorage.getItem("token");
             if (token) {
-                const resGlasovi = await fetch("http://localhost:8000/glasovi/moji", {
+                const resGlasovi = await fetch("https://friforum-production.up.railway.app/glasovi/moji", {
                     headers: { Authorization: "Bearer " + token }
                 });
                 if (resGlasovi.ok) {
@@ -28,13 +28,13 @@ export default function PostPage() {
             }
 
             // Potem objava
-            const resObjava = await fetch(`http://localhost:8000/objave/${id}`);
+            const resObjava = await fetch(`https://friforum-production.up.railway.app/objave/${id}`);
             const objavaData = await resObjava.json();
             setPost(objavaData);
             setVotes(objavaData.skupaj_glasov || 0);
 
             // Komentarji
-            const resKomentarji = await fetch(`http://localhost:8000/komentarji/${id}`);
+            const resKomentarji = await fetch(`https://friforum-production.up.railway.app/komentarji/${id}`);
             const komentarjiData = await resKomentarji.json();
             setKomentarji(Array.isArray(komentarjiData) ? komentarjiData : []);
         };
@@ -43,7 +43,7 @@ export default function PostPage() {
     }, [id]);
 
     const refreshKomentarji = async () => {
-        const res = await fetch(`http://localhost:8000/komentarji/${id}`);
+        const res = await fetch(`https://friforum-production.up.railway.app/komentarji/${id}`);
         const data = await res.json();
         setKomentarji(Array.isArray(data) ? data : []);
     };
@@ -52,7 +52,7 @@ export default function PostPage() {
         const token = localStorage.getItem("token");
         if (!token) { alert("Moraš biti prijavljen"); return; }
 
-        const res = await fetch("http://localhost:8000/glasovi/", {
+        const res = await fetch("https://friforum-production.up.railway.app/glasovi/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -81,7 +81,7 @@ export default function PostPage() {
         if (!novKomentar.trim()) return;
 
         setLoading(true);
-        const res = await fetch("http://localhost:8000/komentarji/", {
+        const res = await fetch("https://friforum-production.up.railway.app/komentarji/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -248,7 +248,7 @@ function KomentarKomponenta({ komentar, casNazaj, objavaId, refreshKomentarji })
         if (!novOdgovor.trim()) return;
 
         setLoading(true);
-        const res = await fetch("http://localhost:8000/komentarji/", {
+        const res = await fetch("https://friforum-production.up.railway.app/komentarji/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

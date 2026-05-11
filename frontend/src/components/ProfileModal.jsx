@@ -17,7 +17,7 @@ export default function ProfileModal({ open, setOpen }) {
         const loadData = async () => {
             setLoading(true);
             try {
-                const res = await fetch("http://localhost:8000/profil/me", {
+                const res = await fetch("https://friforum-production.up.railway.app/profil/me", {
                     headers: { Authorization: "Bearer " + token }
                 });
                 const data = await res.json();
@@ -38,7 +38,7 @@ export default function ProfileModal({ open, setOpen }) {
 
     const saveProfile = async () => {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:8000/profil/me", {
+        const res = await fetch("https://friforum-production.up.railway.app/profil/me", {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

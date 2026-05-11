@@ -11,7 +11,7 @@ export default function Login() {
         setLoading(true);
 
         try {
-            const res = await fetch("http://localhost:8000/auth/prijava", {
+            const res = await fetch("https://friforum-production.up.railway.app/auth/prijava", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, geslo })
