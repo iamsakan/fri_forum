@@ -48,6 +48,7 @@ export default function PostPage() {
   const [votes, setVotes] = useState(0);
   const [userVote, setUserVote] = useState(null);
   const [profileMode, setProfileMode] = useState("me");
+  const [priloge, setPriloge] = useState([]);
 
   useEffect(() => {
     const loadAll = async () => {
@@ -69,6 +70,11 @@ export default function PostPage() {
       const objavaData = await resObjava.json();
       setPost(objavaData);
       setVotes(objavaData.skupaj_glasov || 0);
+
+      // Priloge
+      const resPriloge = await fetch(`https://friforum-production.up.railway.app/objave/${id}/priloge`);
+      const prilogeData = await resPriloge.json();
+      setPriloge(Array.isArray(prilogeData) ? prilogeData : []);
 
       // Komentarji
     const resKomentarji = await fetch(
@@ -229,6 +235,19 @@ export default function PostPage() {
           </div>
 
           <p className="text-gray-700 leading-relaxed mb-6">{post.vsebina}</p>
+
+          {/* Priloge */}
+            {priloge.length > 0 && (
+                <div className="flex flex-col gap-2 mb-4">
+                    {priloge.map((p) => (
+                        p.tip_datoteke.startsWith("image/") ? (
+                            <img key={p.id} src={p.pot} alt={p.ime_datoteke} className="rounded-lg max-h-96 object-contain border border-gray-200" />
+                        ) : (
+                            <a key={p.id} href={p.pot} target="_blank" className="text-blue-600 hover:underline text-sm">📎 {p.ime_datoteke}</a>
+                        )
+                    ))}
+                </div>
+            )}
 
           <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
             <button
