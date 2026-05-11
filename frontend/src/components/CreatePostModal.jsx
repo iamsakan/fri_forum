@@ -86,7 +86,7 @@ export default function CreatePostModal({ open, setOpen, refreshPosts }) {
       // 2. UPLOAD FILE (če obstaja)
       if (file) {
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("datoteka", file);
 
         const uploadRes = await fetch(
           `https://friforum-production.up.railway.app/objave/${objava.id}/priloge`,
