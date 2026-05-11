@@ -71,12 +71,12 @@ export default function PostCard({ post }) {
   };
 
   const casObjave = () => {
-    const diff = Math.floor((new Date() - new Date(post.cas_objave)) / 1000);
+    const diff = Math.floor((new Date() - new Date(post.cas_objave + "Z")) / 1000);
     if (diff < 60) return `${diff}s ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return `${Math.floor(diff / 86400)}d ago`;
-  };
+};
 
   const inicialke =
     post.profil?.uporabnisko_ime?.slice(0, 2).toUpperCase() || "??";
