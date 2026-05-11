@@ -241,7 +241,9 @@ export default function PostPage() {
                 <div className="flex flex-col gap-2 mb-4">
                     {priloge.map((p) => (
                         p.tip_datoteke.startsWith("image/") ? (
-                            <img key={p.id} src={p.pot} alt={p.ime_datoteke} className="rounded-lg max-h-96 object-contain border border-gray-200" />
+                            <a key={p.id} href={p.pot} target="_blank" rel="noopener noreferrer">
+                                <img src={p.pot} alt={p.ime_datoteke} className="rounded-lg max-h-96 object-contain border border-gray-200 cursor-pointer hover:opacity-90 transition" />
+                            </a>
                         ) : (
                             <a key={p.id} href={p.pot} target="_blank" className="text-blue-600 hover:underline text-sm">📎 {p.ime_datoteke}</a>
                         )
