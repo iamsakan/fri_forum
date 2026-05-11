@@ -19,16 +19,20 @@ class NovKomentar(BaseModel):
 
 @router.get("/{objava_id}")
 def get_komentarji(objava_id: int):
-    # Dobimo vse komentarje za objavo
     result = supabase.table("komentar")\
-        .select("*, profil(uporabnisko_ime)")\
+        .select("*, profil(uporabnisko_ime), glas_komentar(tip)")\
         .eq("objava_id", objava_id)\
         .order("cas", desc=False)\
         .execute()
     
     komentarji = result.data
     
-    # Sestavimo drevo komentarjev
+    for k in komentarji:
+        glasovi = k.pop("glas_komentar", [])
+        k["st_upvote"] = sum(1 for g in glasovi if g["tip"] == "up")
+        k["st_downvote"] = sum(1 for g in glasovi if g["tip"] == "down")
+        k["glasovi"] = k["st_upvote"] - k["st_downvote"]
+    
     glavni = []
     slovar = {}
     
