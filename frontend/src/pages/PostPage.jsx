@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import ProfileModal from "../components/ProfileModal";
@@ -49,6 +49,9 @@ export default function PostPage() {
   const [userVote, setUserVote] = useState(null);
   const [profileMode, setProfileMode] = useState("me");
   const [priloge, setPriloge] = useState([]);
+  const [komentarFile, setKomentarFile] = useState(null);
+  const [komentarPreview, setKomentarPreview] = useState(null);
+  const komentarFileRef = useRef(null);
 
   useEffect(() => {
     const loadAll = async () => {
@@ -154,11 +157,26 @@ export default function PostPage() {
     });
 
     if (res.ok) {
+      const komentar = await res.json();
+      
+      // Upload slike če obstaja
+      if (komentarFile) {
+        const formData = new FormData();
+        formData.append("datoteka", komentarFile);
+        await fetch(`https://friforum-production.up.railway.app/komentarji/${komentar.id}/priloge`, {
+          method: "POST",
+          headers: { Authorization: "Bearer " + token },
+          body: formData,
+        });
+        setKomentarFile(null);
+        setKomentarPreview(null);
+      }
+
       setNovKomentar("");
       await refreshKomentarji();
     }
     setLoading(false);
-  };
+};
 
   const casNazaj = (datum) => {
     const diff = Math.floor((new Date() - new Date(datum + "Z")) / 1000);
@@ -291,27 +309,60 @@ export default function PostPage() {
 
         {/* Dodaj komentar */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
-          <div className="flex gap-3">
+        <div className="flex gap-3">
             <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-              <span className="text-gray-400 text-xs">?</span>
+            <span className="text-gray-400 text-xs">?</span>
             </div>
             <div className="flex-1">
-              <textarea
+            <textarea
                 value={novKomentar}
                 onChange={(e) => setNovKomentar(e.target.value)}
                 placeholder="Share your thoughts..."
                 rows={3}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 resize-none"
-              />
-              <button
+            />
+            {komentarPreview && (
+                <div className="mt-2 rounded-lg overflow-hidden border border-gray-200">
+                <img src={komentarPreview} alt="preview" className="w-full max-h-40 object-cover" />
+                </div>
+            )}
+            <div className="flex items-center gap-2 mt-2">
+                <button
                 onClick={dodajKomentar}
                 disabled={loading || !novKomentar.trim()}
-                className="mt-2 bg-gray-700 text-white text-sm px-4 py-1.5 rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
-              >
+                className="bg-gray-700 text-white text-sm px-4 py-1.5 rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
+                >
                 {loading ? "Pošiljam..." : "Post Comment"}
-              </button>
+                </button>
+                <button
+                onClick={() => komentarFileRef.current.click()}
+                className="text-sm px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                >
+                📎 Dodaj sliko
+                </button>
+                {komentarFile && (
+                <button
+                    onClick={() => { setKomentarFile(null); setKomentarPreview(null); }}
+                    className="text-sm text-red-500 hover:text-red-700"
+                >
+                    odstrani
+                </button>
+                )}
             </div>
-          </div>
+            <input
+                ref={komentarFileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                const f = e.target.files[0];
+                if (!f) return;
+                setKomentarFile(f);
+                setKomentarPreview(URL.createObjectURL(f));
+                }}
+            />
+            </div>
+        </div>
         </div>
 
         {/* Komentarji */}
