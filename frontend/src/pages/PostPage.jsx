@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import ProfileModal from "../components/ProfileModal";
+import Toast from "../components/Toast";
+import { useToast } from "../hooks/useToast";
 
 function countAllComments(komentarji) {
   let count = 0;
@@ -17,24 +19,6 @@ function countAllComments(komentarji) {
   return count;
 }
 
-const report = async (tip, idTarget) => {
-  const token = localStorage.getItem("token");
-  if (!token) return alert("Moraš biti prijavljen");
-
-  await fetch("https://friforum-production.up.railway.app/prijave/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-    body: JSON.stringify({
-      tip,
-      target_id: idTarget,
-    }),
-  });
-
-  alert("Prijavljeno!");
-};
 
 export default function PostPage() {
   const [profileOpen, setProfileOpen] = useState(false);
@@ -52,6 +36,7 @@ export default function PostPage() {
   const [komentarFile, setKomentarFile] = useState(null);
   const [komentarPreview, setKomentarPreview] = useState(null);
   const komentarFileRef = useRef(null);
+  const { sporocila, dodajSporocilo, odstraniSporocilo } = useToast();
 
   useEffect(() => {
     const loadAll = async () => {
@@ -111,7 +96,7 @@ export default function PostPage() {
   const vote = async (tip) => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Moraš biti prijavljen");
+      dodajSporocilo("Moraš biti prijavljen", "warning");
       return;
     }
 
@@ -141,7 +126,7 @@ export default function PostPage() {
   const dodajKomentar = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Moraš biti prijavljen");
+      dodajSporocilo("Moraš biti prijavljen", "warning");
       return;
     }
     if (!novKomentar.trim()) return;
@@ -177,6 +162,25 @@ export default function PostPage() {
     }
     setLoading(false);
 };
+
+    const report = async (tip, idTarget) => {
+    const token = localStorage.getItem("token");
+    if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
+
+    await fetch("https://friforum-production.up.railway.app/prijave/", {
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({
+        tip,
+        target_id: idTarget,
+        }),
+    });
+
+    dodajSporocilo("Prijavljeno!", "success");
+    };
 
   const casNazaj = (datum) => {
     const diff = Math.floor((new Date() - new Date(datum + "Z")) / 1000);
@@ -386,6 +390,7 @@ export default function PostPage() {
                   objavaId={id}
                   refreshKomentarji={refreshKomentarji}
                   openProfile={openProfile}
+                  dodajSporocilo={dodajSporocilo}
                 />
               ))}
             </div>
@@ -398,6 +403,7 @@ export default function PostPage() {
         username={selectedUser}
         mode={profileMode}
       />
+      <Toast sporocila={sporocila} odstraniSporocilo={odstraniSporocilo} />
     </div>
   );
 }
@@ -408,6 +414,7 @@ function KomentarKomponenta({
   objavaId,
   refreshKomentarji,
   openProfile,
+  dodajSporocilo,
 }) {
   const navigate = useNavigate();
   const [score, setScore] = useState(komentar.glasovi || 0);
@@ -431,7 +438,7 @@ function KomentarKomponenta({
 
   const voteComment = async (tip) => {
     const token = localStorage.getItem("token");
-    if (!token) return alert("Moraš biti prijavljen");
+    if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
 
     const res = await fetch("https://friforum-production.up.railway.app/glasovi/komentar", {
       method: "POST",
@@ -461,7 +468,7 @@ function KomentarKomponenta({
 
   const report = async (tip, idTarget) => {
     const token = localStorage.getItem("token");
-    if (!token) return alert("Moraš biti prijavljen");
+    if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
 
     await fetch("https://friforum-production.up.railway.app/prijave/", {
       method: "POST",
@@ -475,7 +482,7 @@ function KomentarKomponenta({
       }),
     });
 
-    alert("Prijavljeno!");
+    dodajSporocilo("Prijavljeno!", "success");
   };
 
   const odgovori = komentar.odgovori || [];
@@ -485,7 +492,7 @@ function KomentarKomponenta({
   const dodajOdgovor = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Moraš biti prijavljen");
+      dodajSporocilo("Moraš biti prijavljen", "warning");
       return;
     }
     if (!novOdgovor.trim()) return;
@@ -606,6 +613,7 @@ function KomentarKomponenta({
                 casNazaj={casNazaj}
                 objavaId={objavaId}
                 refreshKomentarji={refreshKomentarji}
+                dodajSporocilo={dodajSporocilo}
               />
             ))}
           </div>
