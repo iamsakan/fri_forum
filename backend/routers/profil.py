@@ -36,12 +36,13 @@ def get_moj_profil(current_user=Depends(get_current_user)):
         .execute()
 
     return {
-        "profil": profil.data,
-        "objave": objave.data,
-        "st_objav": len(objave.data),
-        "st_komentarjev": len(komentarji.data),
-        "st_glasov": len(glasovi.data)
-    }
+    "profil": profil.data,
+    "objave": objave.data,
+    "komentarji": komentarji.data,
+    "st_objav": len(objave.data),
+    "st_komentarjev": len(komentarji.data),
+    "st_glasov": len(glasovi.data)
+}
 
 @router.get("/{username}")
 def get_profil(username: str):
@@ -64,7 +65,7 @@ def get_profil(username: str):
     
     komentarji = supabase.table("komentar")\
         .select("*, objava(naslov)")\
-        .eq("avtor_id", id)\
+        .eq("avtor_id", current_user.id)\
         .order("cas", desc=True)\
         .execute()
     
