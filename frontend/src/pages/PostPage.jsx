@@ -283,10 +283,10 @@ export default function PostPage() {
 
         {/* Komentarji */}
         <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <h3 className="font-semibold text-gray-900 mb-4">
-            {komentarji.length}{" "}
-            {komentarji.length === 1 ? "Comment" : "Comments"}
-          </h3>
+            <h3 className="font-semibold text-gray-900 mb-4">
+                {countAllComments(komentarji)}{" "}
+                {countAllComments(komentarji) === 1 ? "Comment" : "Comments"}
+            </h3>
 
           {komentarji.length === 0 ? (
             <p className="text-center text-gray-400 py-6 text-sm">
