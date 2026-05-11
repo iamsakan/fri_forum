@@ -55,3 +55,42 @@ def get_glasovi(objava_id: int):
     down = sum(1 for g in result.data if g["tip"] == "down")
     
     return {"up": up, "down": down, "skupaj": up - down}
+
+
+class NovGlasKomentar(BaseModel):
+    tip: str
+    komentar_id: int
+
+@router.post("/komentar")
+def glasuj_komentar(glas: NovGlasKomentar, current_user=Depends(get_current_user)):
+    if glas.tip not in ["up", "down"]:
+        raise HTTPException(status_code=400, detail="Tip mora biti 'up' ali 'down'")
+    
+    obstojen = supabase.table("glas_komentar")\
+        .select("id, tip")\
+        .eq("komentar_id", glas.komentar_id)\
+        .eq("avtor_id", current_user.id)\
+        .execute()
+    
+    if obstojen.data:
+        if obstojen.data[0]["tip"] == glas.tip:
+            supabase.table("glas_komentar").delete().eq("id", obstojen.data[0]["id"]).execute()
+            return {"sporocilo": "Glas odstranjen"}
+        else:
+            supabase.table("glas_komentar").update({"tip": glas.tip}).eq("id", obstojen.data[0]["id"]).execute()
+            return {"sporocilo": "Glas posodobljen"}
+    
+    result = supabase.table("glas_komentar").insert({
+        "tip": glas.tip,
+        "komentar_id": glas.komentar_id,
+        "avtor_id": current_user.id
+    }).execute()
+    return result.data[0]
+
+@router.get("/moji/komentarji")
+def get_moji_glasovi_komentarjev(current_user=Depends(get_current_user)):
+    result = supabase.table("glas_komentar")\
+        .select("komentar_id, tip")\
+        .eq("avtor_id", current_user.id)\
+        .execute()
+    return {str(g["komentar_id"]): g["tip"] for g in result.data}
