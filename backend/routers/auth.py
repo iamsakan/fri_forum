@@ -44,8 +44,15 @@ def registracija(podatki: Registracija):
             "vloga": "uporabnik"
         }).execute()
 
+        # Takoj prijavi uporabnika
+        prijava = supabase.auth.sign_in_with_password({
+            "email": podatki.email,
+            "password": podatki.geslo
+        })
+
         return {
             "sporocilo": "Registracija uspešna!",
+            "access_token": prijava.session.access_token,
             "user_id": rezultat.user.id,
             "email": rezultat.user.email
         }
