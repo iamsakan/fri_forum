@@ -421,6 +421,14 @@ function KomentarKomponenta({
   const [novOdgovor, setNovOdgovor] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [priloge, setPriloge] = useState([]);
+
+    useEffect(() => {
+        fetch(`https://friforum-production.up.railway.app/komentarji/${komentar.id}/priloge`)
+            .then(res => res.json())
+            .then(data => setPriloge(Array.isArray(data) ? data : []));
+    }, [komentar.id]);
+
   const voteComment = async (tip) => {
     const token = localStorage.getItem("token");
     if (!token) return alert("Moraš biti prijavljen");
@@ -524,6 +532,15 @@ function KomentarKomponenta({
           </span>
         </div>
         <p className="text-sm text-gray-700 mb-2">{komentar.vsebina}</p>
+        {priloge.length > 0 && (
+        <div className="flex flex-col gap-1 mb-2">
+                {priloge.map((p) => (
+                    <a key={p.id} href={p.pot} target="_blank" rel="noopener noreferrer">
+                        <img src={p.pot} alt={p.ime_datoteke} className="rounded-lg max-h-60 object-contain border border-gray-200 cursor-pointer hover:opacity-90 transition" />
+                    </a>
+                ))}
+            </div>
+        )}
         <div className="flex items-center gap-2 text-sm text-gray-500">
             <button
                 onClick={() => voteComment("up")}
