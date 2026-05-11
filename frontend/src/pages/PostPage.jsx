@@ -336,14 +336,13 @@ function KomentarKomponenta({
     const token = localStorage.getItem("token");
     if (!token) return alert("Moraš biti prijavljen");
 
-    const res = await fetch("https://friforum-production.up.railway.app/glasovi/", {
+    const res = await fetch("https://friforum-production.up.railway.app/glasovi/komentar", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + token,
       },
       body: JSON.stringify({
-        objava_id: parseInt(objavaId),
         komentar_id: komentar.id,
         tip,
       }),
@@ -361,7 +360,7 @@ function KomentarKomponenta({
         setUserVote(tip);
       }
     }
-  };
+};
 
   const report = async (tip, idTarget) => {
     const token = localStorage.getItem("token");
