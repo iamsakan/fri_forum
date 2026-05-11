@@ -71,11 +71,23 @@ export default function PostPage() {
       setVotes(objavaData.skupaj_glasov || 0);
 
       // Komentarji
-      const resKomentarji = await fetch(
+    const resKomentarji = await fetch(
         `https://friforum-production.up.railway.app/komentarji/${id}`,
-      );
-      const komentarjiData = await resKomentarji.json();
-      setKomentarji(Array.isArray(komentarjiData) ? komentarjiData : []);
+    );
+    const komentarjiData = await resKomentarji.json();
+    setKomentarji(Array.isArray(komentarjiData) ? komentarjiData : []);
+
+    // Glasovi na komentarjih
+    if (token) {
+        const resGlasoviKomentarjev = await fetch(
+            "https://friforum-production.up.railway.app/glasovi/moji/komentarji",
+            { headers: { Authorization: "Bearer " + token } }
+        );
+        if (resGlasoviKomentarjev.ok) {
+            const glasoviKomentarjev = await resGlasoviKomentarjev.json();
+            localStorage.setItem("moji_glasovi_komentarjev", JSON.stringify(glasoviKomentarjev));
+            }
+        }
     };
 
     loadAll();
@@ -327,7 +339,12 @@ function KomentarKomponenta({
 }) {
   const navigate = useNavigate();
   const [score, setScore] = useState(komentar.glasovi || 0);
-  const [userVote, setUserVote] = useState(null);
+    const shranjeniGlasoviKomentarjev = JSON.parse(
+        localStorage.getItem("moji_glasovi_komentarjev") || "{}"
+    );
+    const [userVote, setUserVote] = useState(
+        shranjeniGlasoviKomentarjev[String(komentar.id)] || null
+    );
   const [showOdgovor, setShowOdgovor] = useState(false);
   const [novOdgovor, setNovOdgovor] = useState("");
   const [loading, setLoading] = useState(false);
