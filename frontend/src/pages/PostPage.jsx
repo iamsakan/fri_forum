@@ -452,22 +452,22 @@ function KomentarKomponenta({
           </span>
         </div>
         <p className="text-sm text-gray-700 mb-2">{komentar.vsebina}</p>
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <button
-            onClick={() => voteComment("up")}
-            className={userVote === "up" ? "text-blue-600" : ""}
-          >
-            ↑
-          </button>
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+            <button
+                onClick={() => voteComment("up")}
+                className={`text-lg ${userVote === "up" ? "text-blue-600" : ""}`}
+            >
+                ↑
+            </button>
 
-          <span>{score}</span>
+            <span>{score}</span>
 
-          <button
-            onClick={() => voteComment("down")}
-            className={userVote === "down" ? "text-red-500" : ""}
-          >
-            ↓
-          </button>
+            <button
+                onClick={() => voteComment("down")}
+                className={`text-lg ${userVote === "down" ? "text-red-500" : ""}`}
+            >
+                ↓
+            </button>
         </div>
         <button
           onClick={() => setShowOdgovor(!showOdgovor)}
