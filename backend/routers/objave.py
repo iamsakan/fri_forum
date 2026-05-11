@@ -72,13 +72,20 @@ def get_objave(
 @router.get("/{id}")
 def get_objava(id: int):
     result = supabase.table("objava")\
-        .select("*, kategorija(naziv, barva), profil(uporabnisko_ime)")\
+        .select("*, kategorija(naziv, barva), profil(uporabnisko_ime), glas(tip)")\
         .eq("id", id)\
         .single()\
         .execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Objava ne obstaja")
-    return result.data
+    
+    objava = result.data
+    glasovi = objava.pop("glas", [])
+    objava["st_upvote"] = sum(1 for g in glasovi if g["tip"] == "up")
+    objava["st_downvote"] = sum(1 for g in glasovi if g["tip"] == "down")
+    objava["skupaj_glasov"] = objava["st_upvote"] - objava["st_downvote"]
+    
+    return objava
 
 @router.post("/")
 def ustvari_objavo(objava: NovaObjava, current_user=Depends(get_current_user)):
