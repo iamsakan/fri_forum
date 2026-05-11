@@ -46,7 +46,7 @@ export default function Register() {
         localStorage.setItem("user_id", data.user_id);
       }
 
-      window.location.href = "/login";
+      window.location.href = "/";
     } catch (err) {
       setError("Napaka pri povezavi s strežnikom");
     } finally {
