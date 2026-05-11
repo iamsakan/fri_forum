@@ -32,6 +32,16 @@ export default function Login() {
 
             localStorage.setItem("token", token);
             localStorage.setItem("user_id", data.user_id);
+
+            // Pridobi username
+            const profilRes = await fetch("https://friforum-production.up.railway.app/profil/me", {
+                headers: { Authorization: "Bearer " + token }
+            });
+            if (profilRes.ok) {
+                const profil = await profilRes.json();
+                localStorage.setItem("uporabnisko_ime", profil.profil.uporabnisko_ime);
+            }
+
             window.location.href = "/";
         } catch (err) {
             setError("Napaka pri povezavi s strežnikom");

@@ -44,6 +44,7 @@ export default function Register() {
       if (token) {
         localStorage.setItem("token", token);
         localStorage.setItem("user_id", data.user_id);
+        localStorage.setItem("uporabnisko_ime", uporabniskoIme);
       }
 
       window.location.href = "/";
