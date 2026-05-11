@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Toast from "./Toast";
+import { useToast } from "../hooks/useToast";
 
 export default function PostCard({ post }) {
+  const { sporocila, dodajSporocilo, odstraniSporocilo } = useToast();
   const [votes, setVotes] = useState(post.skupaj_glasov || 0);
   const shranjeniGlasovi = JSON.parse(
     localStorage.getItem("moji_glasovi") || "{}",
@@ -15,7 +18,7 @@ export default function PostCard({ post }) {
     e.stopPropagation();
 
     const token = localStorage.getItem("token");
-    if (!token) return alert("Moraš biti prijavljen");
+    if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
 
     await fetch("https://friforum-production.up.railway.app/prijave/", {
       method: "POST",
@@ -29,7 +32,7 @@ export default function PostCard({ post }) {
       }),
     });
 
-    alert("Prijavljeno!");
+    dodajSporocilo("Prijavljeno!", "success");
   };
 
   const vote = async (tip, e) => {
@@ -37,7 +40,7 @@ export default function PostCard({ post }) {
 
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Moraš biti prijavljen");
+      dodajSporocilo("Moraš biti prijavljen", "warning");
       return;
     }
 
@@ -208,6 +211,7 @@ export default function PostCard({ post }) {
           </div>
         </div>
       </div>
+      <Toast sporocila={sporocila} odstraniSporocilo={odstraniSporocilo} />
     </div>
   );
 }
