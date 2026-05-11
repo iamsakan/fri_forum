@@ -95,7 +95,7 @@ export default function Home() {
                 <div className="flex gap-2 mb-4">
                     {[
                         { key: "new", label: "Recent", icon: "🕐" },
-                        { key: "top", label: "Trending", icon: "📈" },
+                        { key: "top", label: "Upvotes", icon: "⬆️" },
                     ].map(s => (
                         <button
                             key={s.key}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useRef } from "react";
 
 export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
   const [profil, setProfil] = useState(null);
@@ -8,6 +9,9 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
   const [bio, setBio] = useState("");
   const [aktivniTab, setAktivniTab] = useState("objave");
   const [loading, setLoading] = useState(false);
+
+  const [pfp, setPfp] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!open) return;
@@ -111,10 +115,30 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
 
           {/* Avatar + info */}
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center">
-              <span className="text-blue-700 text-lg font-bold">
-                {inicialke}
-              </span>
+            <div
+              className="relative w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center cursor-pointer group overflow-hidden"
+              onClick={() => {
+                if (mode === "me") fileInputRef.current.click();
+              }}
+            >
+              {/* slika ali fallback */}
+              {profil?.pfp_url ? (
+                <img
+                  src={profil.pfp_url}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-blue-700 text-lg font-bold">
+                  {inicialke}
+                </span>
+              )}
+
+              {/* hover overlay */}
+              {mode === "me" && (
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                  <span className="text-white text-xs">✏️</span>
+                </div>
+              )}
             </div>
             <div>
               <p className="font-semibold text-gray-900">
@@ -207,7 +231,11 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
           ) : aktivniTab === "objave" ? (
             objave.length === 0 ? (
               <p className="text-center text-gray-400 py-4 text-sm">
-                Še nimate objav
+                <p className="text-center text-gray-400 py-4 text-sm">
+                  {mode === "me"
+                    ? "Še nimate objav"
+                    : "Ta uporabnik še nima objav"}
+                </p>
               </p>
             ) : (
               <div className="flex flex-col gap-2">
@@ -229,7 +257,9 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
             )
           ) : komentarji.length === 0 ? (
             <p className="text-center text-gray-400 py-4 text-sm">
-              Še nimate komentarjev
+              {mode === "me"
+                ? "Še nimate komentarjev"
+                : "Ta uporabnik še nima komentarjev"}
             </p>
           ) : (
             <div className="flex flex-col gap-2">
@@ -247,6 +277,34 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
             </div>
           )}
         </div>
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const token = localStorage.getItem("token");
+
+            const res = await fetch("http://localhost:8000/profil/pfp", {
+              method: "POST",
+              headers: {
+                Authorization: "Bearer " + token,
+              },
+              body: formData,
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              setProfil((p) => ({ ...p, pfp_url: data.url }));
+            }
+          }}
+        />
       </div>
     </div>
   );

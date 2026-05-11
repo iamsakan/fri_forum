@@ -207,10 +207,7 @@ export default function PostPage() {
               </span>
             </div>
             <span
-              onClick={() => {
-                setSelectedUser(post.profil?.uporabnisko_ime);
-                setProfileOpen(true);
-              }}
+              onClick={() => openProfile(post.profil?.uporabnisko_ime)}
               className="cursor-pointer hover:underline"
             >
               {post.profil?.uporabnisko_ime || "Anon"}
