@@ -43,8 +43,13 @@ export default function Navbar({ setQuery, refreshPosts }) {
               href="/"
               className="flex items-center gap-2 font-bold text-gray-900 text-lg"
             >
-              <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
-                <span className="text-white text-xs font-bold">F</span>
+              <div className="w-7 h-7">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                  <rect width="100" height="100" rx="20" fill="#2563EB"/>
+                  <rect x="22" y="25" width="56" height="12" rx="3" fill="white"/>
+                  <rect x="22" y="44" width="40" height="12" rx="3" fill="white"/>
+                  <rect x="22" y="63" width="56" height="12" rx="3" fill="white"/>
+                </svg>
               </div>
               FRI Forum
             </a>
