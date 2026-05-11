@@ -43,16 +43,18 @@ def get_moj_profil(current_user=Depends(get_current_user)):
         "st_glasov": len(glasovi.data)
     }
 
-@router.get("/{id}")
-def get_profil(id: str):
+@router.get("/{username}")
+def get_profil(username: str):
     profil = supabase.table("profil")\
         .select("*")\
-        .eq("id", id)\
+        .eq("uporabnisko_ime", username)\
         .single()\
         .execute()
     
     if not profil.data:
         raise HTTPException(status_code=404, detail="Profil ne obstaja")
+    
+    id = profil.data["id"]
     
     objave = supabase.table("objava")\
         .select("*, kategorija(naziv, barva)")\
