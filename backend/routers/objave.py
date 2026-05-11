@@ -33,7 +33,7 @@ def get_objave(
     limit: int = Query(10)
 ):
     query = supabase.table("objava")\
-        .select("*, kategorija(naziv, barva), profil(uporabnisko_ime), glas(tip)")
+    .select("*, kategorija(naziv, barva), profil(uporabnisko_ime), glas(tip), komentar(id)")
     
     if kategorija_id:
         query = query.eq("kategorija_id", kategorija_id)
@@ -52,6 +52,8 @@ def get_objave(
         objava["st_upvote"] = sum(1 for g in glasovi if g["tip"] == "up")
         objava["st_downvote"] = sum(1 for g in glasovi if g["tip"] == "down")
         objava["skupaj_glasov"] = objava["st_upvote"] - objava["st_downvote"]
+        komentarji = objava.pop("komentar", [])
+        objava["stevilo_komentarjev"] = len(komentarji)
 
     if sort == "top":
         objave = sorted(objave, key=lambda x: x["skupaj_glasov"], reverse=True)
