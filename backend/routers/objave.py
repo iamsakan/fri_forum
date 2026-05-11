@@ -35,39 +35,36 @@ def get_objave(
     query = supabase.table("objava")\
         .select("*, kategorija(naziv, barva), profil(uporabnisko_ime), glas(tip)")
     
-    # Filtriranje po kategoriji
     if kategorija_id:
         query = query.eq("kategorija_id", kategorija_id)
     
-    # Iskanje po naslovu in vsebini
     if q:
         query = query.or_(f"naslov.ilike.%{q}%,vsebina.ilike.%{q}%")
     
-    # limit prikazanih objav in paginacija
-    start = (page - 1) * limit
-    end = start + limit - 1
-    query = query.range(start, end)
-    
-    # Sortiranje
     if sort == "new":
         query = query.order("cas_objave", desc=True)
-    elif sort == "top":
-        query = query.order("st_seckov", desc=True)
     
     result = query.execute()
-    
     objave = result.data
+
     for objava in objave:
         glasovi = objava.pop("glas", [])
         objava["st_upvote"] = sum(1 for g in glasovi if g["tip"] == "up")
         objava["st_downvote"] = sum(1 for g in glasovi if g["tip"] == "down")
         objava["skupaj_glasov"] = objava["st_upvote"] - objava["st_downvote"]
-    
+
+    if sort == "top":
+        objave = sorted(objave, key=lambda x: x["skupaj_glasov"], reverse=True)
+
+    start = (page - 1) * limit
+    end = start + limit
+    stran = objave[start:end]
+
     return {
-        "objave": objave,
+        "objave": stran,
         "page": page,
         "limit": limit,
-        "ima_vec": len(objave) == limit
+        "ima_vec": end < len(objave)
     }
 
 @router.get("/{id}")
