@@ -455,16 +455,24 @@ function KomentarKomponenta({
         <div className="flex items-center gap-2 text-sm text-gray-500">
             <button
                 onClick={() => voteComment("up")}
-                className={`text-lg ${userVote === "up" ? "text-blue-600" : ""}`}
+                className={`px-2 py-1 rounded-lg border text-sm transition ${
+                userVote === "up"
+                    ? "bg-blue-50 border-blue-200 text-blue-600"
+                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                }`}
             >
                 ↑
             </button>
 
-            <span>{score}</span>
+            <span className="text-sm font-semibold">{score}</span>
 
             <button
                 onClick={() => voteComment("down")}
-                className={`text-lg ${userVote === "down" ? "text-red-500" : ""}`}
+                className={`px-2 py-1 rounded-lg border text-sm transition ${
+                userVote === "down"
+                    ? "bg-red-50 border-red-200 text-red-500"
+                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                }`}
             >
                 ↓
             </button>
