@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Toast from "./Toast";
 import { useToast } from "../hooks/useToast";
@@ -13,6 +13,45 @@ export default function PostCard({ post }) {
     shranjeniGlasovi[String(post.id)] || null,
   );
   const navigate = useNavigate();
+
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const close = () => setMenuOpen(false);
+
+    if (menuOpen) {
+      window.addEventListener("click", close);
+    }
+
+    return () => window.removeEventListener("click", close);
+  }, [menuOpen]);
+
+  const currentUserId = localStorage.getItem("user_id");
+  const isOwner = String(post.avtor_id) === String(currentUserId);
+
+  const deletePost = async (e) => {
+    e.stopPropagation();
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const res = await fetch(
+      `https://friforum-production.up.railway.app/objave/${post.id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      },
+    );
+
+    if (res.ok) {
+      dodajSporocilo("Objava izbrisana", "success");
+      window.location.reload(); // simple refresh (lahko kasneje optimiziraš)
+    } else {
+      dodajSporocilo("Napaka pri brisanju", "warning");
+    }
+  };
 
   const report = async (tip, idTarget, e) => {
     e.stopPropagation();
@@ -44,17 +83,20 @@ export default function PostCard({ post }) {
       return;
     }
 
-    const res = await fetch("https://friforum-production.up.railway.app/glasovi/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
+    const res = await fetch(
+      "https://friforum-production.up.railway.app/glasovi/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({
+          objava_id: post.id,
+          tip: tip,
+        }),
       },
-      body: JSON.stringify({
-        objava_id: post.id,
-        tip: tip,
-      }),
-    });
+    );
 
     if (res.ok) {
       if (userVote === tip) {
@@ -74,12 +116,14 @@ export default function PostCard({ post }) {
   };
 
   const casObjave = () => {
-    const diff = Math.floor((new Date() - new Date(post.cas_objave + "Z")) / 1000);
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
-};
+    const diff = Math.floor(
+      (new Date() - new Date(post.cas_objave + "Z")) / 1000,
+    );
+    if (diff < 60) return `pred ${diff}s`;
+    if (diff < 3600) return `pred ${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `pred ${Math.floor(diff / 3600)}h`;
+    return `pred ${Math.floor(diff / 86400)} dnevi`;
+  };
 
   const inicialke =
     post.profil?.uporabnisko_ime?.slice(0, 2).toUpperCase() || "??";
@@ -159,7 +203,7 @@ export default function PostCard({ post }) {
 
           {/* Naslov */}
           <h2 className="text-base font-semibold text-gray-900 mb-1 leading-snug">
-            {truncate(post.naslov, 70)}
+            {truncate(post.naslov, 61)}
           </h2>
 
           {/* Vsebina preview */}
@@ -201,14 +245,38 @@ export default function PostCard({ post }) {
 
               <span>{post.stevilo_komentarjev || 0}</span>
             </div>
-
-            <button
-              onClick={(e) => report("objava", post.id, e)}
-              className="text-red-500 hover:text-red-700 transition"
-            >
-              Report
-            </button>
           </div>
+        </div>
+        <div className="relative ml-auto">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuOpen((prev) => !prev);
+            }}
+            className="flex items-center justify-center w-8 h-full text-gray-400 hover:text-gray-700"
+          >
+            <span className="text-2xl leading-none">⋮</span>
+          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 top-8 w-36 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10 animate-fadeIn">
+              <button
+                onClick={(e) => report("objava", post.id, e)}
+                className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition"
+              >
+                Prijavi
+              </button>
+
+              {isOwner && (
+                <button
+                  onClick={deletePost}
+                  className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition"
+                >
+                  Odstrani
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
       <Toast sporocila={sporocila} odstraniSporocilo={odstraniSporocilo} />
