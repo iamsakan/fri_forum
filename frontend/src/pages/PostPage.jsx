@@ -223,8 +223,7 @@ export default function PostPage() {
     setLoading(false);
   };
 
-  const report = async (tip, idTarget, e) => {
-  e.stopPropagation();
+  const report = async (tip, idTarget) => {
   const token = localStorage.getItem("token");
   if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
 
@@ -242,7 +241,7 @@ export default function PostPage() {
   });
 
   dodajSporocilo("Prijavljeno!", "success");
-  };
+};
 
   const casNazaj = (datum) => {
     const diff = Math.floor((new Date() - new Date(datum + "Z")) / 1000);
