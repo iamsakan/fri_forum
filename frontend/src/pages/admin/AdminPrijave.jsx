@@ -46,7 +46,13 @@ export default function AdminPrijave() {
               {p.objava.naslov}
             </a>
           ) : (
-            <p className="text-gray-800">{p.komentar?.vsebina}</p>
+  
+            <a href={`/objava/${p.komentar?.objava_id}`}
+              target="_blank"
+              className="text-gray-800 hover:underline"
+            >
+              {p.komentar?.vsebina}
+            </a>
           )}
 
           <p className="text-sm text-gray-600 mt-1">Razlog: {p.razlog}</p>

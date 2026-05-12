@@ -35,7 +35,7 @@ def prijavi_vsebino(prijava: NovaPrijava, current_user=Depends(get_current_user)
 @router.get("/")
 def get_prijave(current_user=Depends(get_moderator)):
     result = supabase.table("prijava")\
-        .select("*, profil(uporabnisko_ime), objava(naslov), komentar(vsebina)")\
+        .select("*, profil(uporabnisko_ime), objava(naslov), komentar(vsebina, objava_id)")\
         .eq("status", "caka")\
         .order("cas", desc=False)\
         .execute()
