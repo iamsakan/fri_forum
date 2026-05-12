@@ -5,7 +5,10 @@ Spletna forumska aplikacija za študente Fakultete za računalništvo in informa
 🔗 **Live demo:** [fri-forum.vercel.app](https://fri-forum.vercel.app)
 
 ---
-
+# Avtorja
+David Poljanec
+Anel Šakanović
+---
 ## Opis projekta
 
 FRI Forum je full-stack spletna aplikacija, razvita v okviru predmeta **Razvoj informacijskih sistemov**. Aplikacija omogoča:
