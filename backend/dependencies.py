@@ -16,8 +16,20 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Security(
         if not user.user:
             raise HTTPException(status_code=401, detail="Neveljaven token")
         
+        # Preveri ali je uporabnik blokiran
+        profil = supabase.table("profil")\
+            .select("vloga")\
+            .eq("id", user.user.id)\
+            .single()\
+            .execute()
+        
+        if profil.data and profil.data["vloga"] == "blokiran":
+            raise HTTPException(status_code=403, detail="Vaš račun je bil blokiran")
+        
         return user.user
     
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=401, detail="Neveljaven token")
 
