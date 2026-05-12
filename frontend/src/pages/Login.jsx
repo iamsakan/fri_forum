@@ -50,6 +50,11 @@ export default function Login() {
         const vloga = profilData.profil.vloga;
 
         localStorage.setItem("vloga", vloga);
+        if (vloga === "blokiran") {
+          setError("Vaš račun je bil blokiran");
+          localStorage.removeItem("token");
+          return;
+        }
         localStorage.setItem(
           "uporabnisko_ime",
           profilData.profil.uporabnisko_ime,
