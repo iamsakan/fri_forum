@@ -7,6 +7,7 @@ export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [confirmId, setConfirmId] = useState(null);
   const { sporocila, dodajSporocilo, odstraniSporocilo } = useToast();
+  const currentUsername = localStorage.getItem("uporabnisko_ime");
 
   const load = async () => {
     setUsers(await adminFetch("/admin/uporabniki"));
@@ -88,6 +89,8 @@ export default function AdminUsers() {
                 >
                   Odblokiraj
                 </button>
+              ) : u.vloga === "admin" || u.uporabnisko_ime === currentUsername ? (
+                null
               ) : (
                 <button
                   onClick={() => setConfirmId(u.id)}
