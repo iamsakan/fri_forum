@@ -21,8 +21,24 @@ export default function Navbar({ setQuery, refreshPosts }) {
   useEffect(() => {
     checkAuth();
     window.addEventListener("storage", checkAuth);
+    
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetch("https://friforum-production.up.railway.app/profil/me", {
+        headers: { Authorization: "Bearer " + token }
+      }).then(res => {
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user_id");
+          localStorage.removeItem("uporabnisko_ime");
+          localStorage.removeItem("vloga");
+          checkAuth();
+        }
+      });
+    }
+    
     return () => window.removeEventListener("storage", checkAuth);
-  }, []);
+}, []);
 
   const handleLogin = () => (window.location.href = "/login");
 
