@@ -14,8 +14,8 @@ class NovaPrijava(BaseModel):
     @field_validator("razlog")
     @classmethod
     def preveri_razlog(cls, v):
-        if len(v.strip()) < 5:
-            raise ValueError("Razlog mora imeti vsaj 5 znakov")
+        if len(v.strip()) < 4:
+            raise ValueError("Razlog mora imeti vsaj 4 znake")
         return v
 
 @router.post("/")
