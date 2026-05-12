@@ -38,6 +38,7 @@ export default function AdminLayout() {
     <div className="min-h-screen flex bg-gray-50">
       <div className="w-64 bg-white border-r p-4">
         <h1 className="text-xl font-bold mb-6">Admin Panel</h1>
+        <a href="/" className="text-sm text-gray-500 hover:text-gray-900 mb-4 block">← Homepage</a>
         <nav className="flex flex-col gap-2 text-sm">
           <Link to="/admin/objave">Objave</Link>
           <Link to="/admin/komentarji">Komentarji</Link>
