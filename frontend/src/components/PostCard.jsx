@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Toast from "./Toast";
 import { useToast } from "../hooks/useToast";
+import ReportModal from "./ReportModal";
 
 export default function PostCard({ post }) {
   const { sporocila, dodajSporocilo, odstraniSporocilo } = useToast();
   const [votes, setVotes] = useState(post.skupaj_glasov || 0);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
   const shranjeniGlasovi = JSON.parse(
     localStorage.getItem("moji_glasovi") || "{}",
   );
@@ -53,8 +56,8 @@ export default function PostCard({ post }) {
     }
   };
 
-  const report = async (tip, idTarget, e) => {
-  e.stopPropagation();
+  const report = async (tip, idTarget, razlog, e) => {
+  if (e) e.stopPropagation();
   const token = localStorage.getItem("token");
   if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
 
@@ -65,14 +68,14 @@ export default function PostCard({ post }) {
       Authorization: "Bearer " + token,
     },
     body: JSON.stringify({
-      razlog: "Neprimerna vsebina",
+      razlog: razlog,
       objava_id: tip === "objava" ? idTarget : null,
       komentar_id: tip === "komentar" ? idTarget : null,
     }),
   });
 
   dodajSporocilo("Prijavljeno!", "success");
-};
+  };
 
   const vote = async (tip, e) => {
     e.stopPropagation();
@@ -261,7 +264,7 @@ export default function PostCard({ post }) {
           {menuOpen && (
             <div className="absolute right-0 top-8 w-36 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10 animate-fadeIn">
               <button
-                onClick={(e) => report("objava", post.id, e)}
+                onClick={(e) => { e.stopPropagation(); setReportTarget({tip: "objava", id: post.id}); setReportOpen(true); }}
                 className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition"
               >
                 Prijavi
@@ -280,6 +283,11 @@ export default function PostCard({ post }) {
         </div>
       </div>
       <Toast sporocila={sporocila} odstraniSporocilo={odstraniSporocilo} />
+      <ReportModal
+        open={reportOpen}
+        setOpen={setReportOpen}
+        onSubmit={(razlog) => report(reportTarget?.tip, reportTarget?.id, razlog)}
+      />
     </div>
   );
 }

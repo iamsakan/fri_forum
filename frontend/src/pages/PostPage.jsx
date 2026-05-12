@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import ProfileModal from "../components/ProfileModal";
 import Toast from "../components/Toast";
 import { useToast } from "../hooks/useToast";
+import ReportModal from "../components/ReportModal";
 
 function countAllComments(komentarji) {
   let count = 0;
@@ -22,6 +23,8 @@ function countAllComments(komentarji) {
 export default function PostPage() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
@@ -223,7 +226,8 @@ export default function PostPage() {
     setLoading(false);
   };
 
-  const report = async (tip, idTarget) => {
+  const report = async (tip, idTarget, razlog, e) => {
+  if (e) e.stopPropagation();
   const token = localStorage.getItem("token");
   if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
 
@@ -234,14 +238,14 @@ export default function PostPage() {
       Authorization: "Bearer " + token,
     },
     body: JSON.stringify({
-      razlog: "Neprimerna vsebina",
+      razlog: razlog,
       objava_id: tip === "objava" ? idTarget : null,
       komentar_id: tip === "komentar" ? idTarget : null,
     }),
   });
 
   dodajSporocilo("Prijavljeno!", "success");
-};
+  };
 
   const casNazaj = (datum) => {
     const diff = Math.floor((new Date() - new Date(datum + "Z")) / 1000);
@@ -410,7 +414,7 @@ export default function PostPage() {
               {menuOpen && (
                 <div className="absolute right-0 top-8 w-36 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10">
                   <button
-                    onClick={() => report("objava", post.id)}
+                    onClick={() => { setReportTarget({tip: "objava", id: post.id}); setReportOpen(true); }}
                     className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
                   >
                     Prijavi
@@ -530,6 +534,11 @@ export default function PostPage() {
         mode={profileMode}
       />
       <Toast sporocila={sporocila} odstraniSporocilo={odstraniSporocilo} />
+      <ReportModal
+        open={reportOpen}
+        setOpen={setReportOpen}
+        onSubmit={(razlog) => report(reportTarget?.tip, reportTarget?.id, razlog)}
+      />
     </div>
   );
 }
@@ -544,6 +553,8 @@ function KomentarKomponenta({
 }) {
   const navigate = useNavigate();
   const [score, setScore] = useState(komentar.glasovi || 0);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
   const shranjeniGlasoviKomentarjev = JSON.parse(
     localStorage.getItem("moji_glasovi_komentarjev") || "{}",
   );
@@ -635,23 +646,25 @@ function KomentarKomponenta({
     }
   };
 
-  const report = async (tip, idTarget) => {
-    const token = localStorage.getItem("token");
-    if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
+  const report = async (tip, idTarget, razlog, e) => {
+  if (e) e.stopPropagation();
+  const token = localStorage.getItem("token");
+  if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
 
-    await fetch("https://friforum-production.up.railway.app/prijave/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-      body: JSON.stringify({
-        tip: tip,
-        target_id: idTarget,
-      }),
-    });
+  await fetch("https://friforum-production.up.railway.app/prijave/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({
+      razlog: razlog,
+      objava_id: tip === "objava" ? idTarget : null,
+      komentar_id: tip === "komentar" ? idTarget : null,
+    }),
+  });
 
-    dodajSporocilo("Prijavljeno!", "success");
+  dodajSporocilo("Prijavljeno!", "success");
   };
 
   const odgovori = komentar.odgovori || [];
@@ -726,10 +739,10 @@ function KomentarKomponenta({
             {openMenuId === komentar.id && (
               <div className="absolute right-0 top-6 w-36 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10">
                 <button
-                  onClick={() => report("komentar", komentar.id)}
-                  className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
-                >
-                  Prijavi
+                    onClick={() => { setReportTarget({tip: "komentar", id: komentar.id}); setReportOpen(true); }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
+                  >
+                    Prijavi
                 </button>
 
                 {isCommentOwner && (
@@ -830,6 +843,11 @@ function KomentarKomponenta({
           </div>
         )}
       </div>
+      <ReportModal
+        open={reportOpen}
+        setOpen={setReportOpen}
+        onSubmit={(razlog) => report(reportTarget?.tip, reportTarget?.id, razlog)}
+      />
     </div>
   );
 }
