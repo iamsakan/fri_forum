@@ -244,10 +244,10 @@ export default function PostPage() {
 
   const casNazaj = (datum) => {
     const diff = Math.floor((new Date() - new Date(datum + "Z")) / 1000);
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
+    if (diff < 60) return `pred ${diff}s`;
+    if (diff < 3600) return `pred ${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `pred ${Math.floor(diff / 3600)}h`;
+    return `pred ${Math.floor(diff / 86400)}dnevi`;
   };
 
   if (!post)
@@ -363,7 +363,7 @@ export default function PostPage() {
                     : "border-gray-200 text-gray-500 hover:border-gray-300"
                 }`}
               >
-                ↑ Upvote
+                ↑ Gorglas
               </button>
 
               <span
@@ -386,7 +386,7 @@ export default function PostPage() {
                     : "border-gray-200 text-gray-500 hover:border-gray-300"
                 }`}
               >
-                ↓ Downvote
+                ↓ Dolglas
               </button>
 
               <span className="text-sm text-gray-400 ml-2">
@@ -412,7 +412,7 @@ export default function PostPage() {
                     onClick={() => report("objava", post.id)}
                     className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
                   >
-                    Report
+                    Prijavi
                   </button>
 
                   {isOwner && (
@@ -420,7 +420,7 @@ export default function PostPage() {
                       onClick={deletePost}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
-                      Delete
+                      Odstrani
                     </button>
                   )}
                 </div>
@@ -439,7 +439,7 @@ export default function PostPage() {
               <textarea
                 value={novKomentar}
                 onChange={(e) => setNovKomentar(e.target.value)}
-                placeholder="Share your thoughts..."
+                placeholder="Deli svoje mnenje..."
                 rows={3}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 resize-none"
               />
@@ -458,13 +458,13 @@ export default function PostPage() {
                   disabled={loading || !novKomentar.trim()}
                   className="bg-gray-700 text-white text-sm px-4 py-1.5 rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
                 >
-                  {loading ? "Pošiljam..." : "Post Comment"}
+                  {loading ? "Pošiljam..." : "Objavi komentar"}
                 </button>
                 <button
                   onClick={() => komentarFileRef.current.click()}
                   className="text-sm px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
                 >
-                  📎 Dodaj sliko
+                  <i className="fas fa-image"></i> Dodaj sliko
                 </button>
                 {komentarFile && (
                   <button
@@ -728,7 +728,7 @@ function KomentarKomponenta({
                   onClick={() => report("komentar", komentar.id)}
                   className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
                 >
-                  Report
+                  Prijavi
                 </button>
 
                 {isCommentOwner && (
@@ -736,7 +736,7 @@ function KomentarKomponenta({
                     onClick={deleteComment}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    Delete
+                    Odstrani
                   </button>
                 )}
               </div>
@@ -793,13 +793,7 @@ function KomentarKomponenta({
           onClick={() => setShowOdgovor(!showOdgovor)}
           className="text-xs text-gray-400 hover:text-gray-600 transition"
         >
-          Reply
-        </button>
-        <button
-          onClick={() => report("komentar", komentar.id)}
-          className="text-xs text-red-500 ml-2"
-        >
-          Report
+          Odgovori
         </button>
 
         {showOdgovor && (

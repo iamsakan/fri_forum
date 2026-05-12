@@ -43,7 +43,7 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
           setBio(data.profil.bio || "");
         }
         setObjave(data.objave || []);
-        setKomentarji((data.komentarji || []).slice().reverse());
+        setKomentarji((data.komentarji || []));
       } catch (err) {
         console.log("ERROR:", err);
       } finally {

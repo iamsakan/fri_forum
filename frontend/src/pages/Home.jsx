@@ -23,7 +23,7 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => {
         setPosts(data.objave || []);
-        setTotalPages(data.total_pages || 1); // če backend podpira
+        setTotalPages(data.total_pages || 1); 
       });
   };
 
@@ -73,9 +73,9 @@ export default function Home() {
       <div className="max-w-3xl mx-auto px-4 py-6">
         {/* Naslov */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Discussion Feed</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Pregled razprav</h1>
           <p className="text-gray-500 text-sm mt-1">
-            Connect with fellow students, ask questions, and share knowledge
+            Poveži se s sošolci, postavljaj vprašanja in deli znanje.
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export default function Home() {
                 : "bg-white border border-gray-200 text-gray-600 hover:border-gray-400"
             }`}
           >
-            All Categories
+            Vse kategorije
           </button>
           {kategorije.map((k) => (
             <button
@@ -109,8 +109,16 @@ export default function Home() {
         {/* Sort bar */}
         <div className="flex gap-2 mb-4">
           {[
-            { key: "new", label: "Recent", icon: "🕐" },
-            { key: "top", label: "Upvotes", icon: "⬆️" },
+            {
+              key: "new",
+              label: "Zadnje objave",
+              icon: <i className="far fa-clock"></i>,
+            },
+            {
+              key: "top",
+              label: "Najboljše objave",
+              icon: <i className="fas fa-arrow-up"></i>,
+            },
           ].map((s) => (
             <button
               key={s.key}
@@ -144,11 +152,11 @@ export default function Home() {
             onClick={() => setPage((p) => p - 1)}
             className="px-3 py-1 border rounded disabled:opacity-40"
           >
-            ← Prev
+            ← Nazaj
           </button>
 
           <span className="text-sm text-gray-500">
-            Page {page} / {totalPages}
+            Stran {page} / {totalPages}
           </span>
 
           <button
@@ -156,7 +164,7 @@ export default function Home() {
             onClick={() => setPage((p) => p + 1)}
             className="px-3 py-1 border rounded disabled:opacity-40"
           >
-            Next →
+            Naprej →
           </button>
         </div>
       </div>

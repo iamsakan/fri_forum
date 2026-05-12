@@ -119,10 +119,10 @@ export default function PostCard({ post }) {
     const diff = Math.floor(
       (new Date() - new Date(post.cas_objave + "Z")) / 1000,
     );
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
+    if (diff < 60) return `pred ${diff}s`;
+    if (diff < 3600) return `pred ${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `pred ${Math.floor(diff / 3600)}h`;
+    return `pred ${Math.floor(diff / 86400)} dnevi`;
   };
 
   const inicialke =
@@ -264,7 +264,7 @@ export default function PostCard({ post }) {
                 onClick={(e) => report("objava", post.id, e)}
                 className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition"
               >
-                Report
+                Prijavi
               </button>
 
               {isOwner && (
@@ -272,7 +272,7 @@ export default function PostCard({ post }) {
                   onClick={deletePost}
                   className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition"
                 >
-                  Delete
+                  Odstrani
                 </button>
               )}
             </div>
