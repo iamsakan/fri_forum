@@ -223,23 +223,25 @@ export default function PostPage() {
     setLoading(false);
   };
 
-  const report = async (tip, idTarget) => {
-    const token = localStorage.getItem("token");
-    if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
+  const report = async (tip, idTarget, e) => {
+  e.stopPropagation();
+  const token = localStorage.getItem("token");
+  if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
 
-    await fetch("https://friforum-production.up.railway.app/prijave/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-      body: JSON.stringify({
-        tip,
-        target_id: idTarget,
-      }),
-    });
+  await fetch("https://friforum-production.up.railway.app/prijave/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({
+      razlog: "Neprimerna vsebina",
+      objava_id: tip === "objava" ? idTarget : null,
+      komentar_id: tip === "komentar" ? idTarget : null,
+    }),
+  });
 
-    dodajSporocilo("Prijavljeno!", "success");
+  dodajSporocilo("Prijavljeno!", "success");
   };
 
   const casNazaj = (datum) => {
