@@ -83,3 +83,11 @@ def moderator_get_objave(current_user=Depends(get_moderator)):
         .order("cas_objave", desc=True)\
         .execute()
     return result.data
+
+@router.get("/komentarji")
+def moderator_get_komentarji(current_user=Depends(get_moderator)):
+    result = supabase.table("komentar")\
+        .select("*, profil(uporabnisko_ime), objava(naslov)")\
+        .order("cas", desc=True)\
+        .execute()
+    return result.data
