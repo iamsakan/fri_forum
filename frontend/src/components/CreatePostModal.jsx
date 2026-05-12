@@ -153,7 +153,7 @@ export default function CreatePostModal({ open, setOpen, refreshPosts }) {
               onClick={() => fileInputRef.current.click()}
               className="text-sm px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
             >
-              📎 Dodaj sliko
+              <i className="fas fa-image"></i> Dodaj sliko
             </button>
 
             {file && (
