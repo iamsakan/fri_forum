@@ -67,7 +67,7 @@ export default function Navbar({ setQuery, refreshPosts }) {
                 {localStorage.getItem("vloga") === "admin" && (
       
                   <a href="/admin/objave"
-                    className="text-sm text-gray-600 hover:text-gray-900"
+                    className="text-sm px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:border-gray-400 transition"
                   >
                     Admin
                   </a>
