@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { adminFetch } from "./adminApi";
+import Toast from "../../components/Toast";
+import { useToast } from "../../hooks/useToast";
 
 export default function AdminPrijave() {
   const [prijave, setPrijave] = useState([]);
+  const { sporocila, dodajSporocilo, odstraniSporocilo } = useToast();
 
   const load = async () => {
     setPrijave(await adminFetch("/prijave/"));
@@ -10,11 +13,13 @@ export default function AdminPrijave() {
 
   const resi = async (id) => {
     await adminFetch(`/prijave/${id}/resi`, { method: "PUT" });
+    dodajSporocilo("Prijava rešena!", "success");
     load();
   };
 
   const zavrni = async (id) => {
     await adminFetch(`/prijave/${id}/zavrni`, { method: "PUT" });
+    dodajSporocilo("Prijava zavrnjena", "info");
     load();
   };
 
@@ -28,32 +33,34 @@ export default function AdminPrijave() {
 
       {prijave.map((p) => (
         <div key={p.id} className="bg-white p-3 border mb-2">
-          {/* TIP PRIJAVE */}
           <p className="text-sm text-gray-500 mb-1">
             {p.objava_id ? "Prijavljena objava" : "Prijavljen komentar"}
           </p>
 
-          {/* NASLOV ALI VSEBINA */}
           {p.objava ? (
-            <p className="font-semibold text-gray-900">{p.objava.naslov}</p>
+            
+            <a href={`/objava/${p.objava_id}`}
+              target="_blank"
+              className="font-semibold text-blue-600 hover:underline"
+            >
+              {p.objava.naslov}
+            </a>
           ) : (
             <p className="text-gray-800">{p.komentar?.vsebina}</p>
           )}
 
-          {/* RAZLOG */}
           <p className="text-sm text-gray-600 mt-1">Razlog: {p.razlog}</p>
+          <p className="text-sm text-gray-400">
+            Prijavil: {p.profil?.uporabnisko_ime || "Neznan"}
+          </p>
 
-          {/* GUMBI */}
           <div className="flex gap-2 mt-2">
-            <button onClick={() => resi(p.id)} className="text-green-600">
-              Reši
-            </button>
-            <button onClick={() => zavrni(p.id)} className="text-red-500">
-              Zavrni
-            </button>
+            <button onClick={() => resi(p.id)} className="text-green-600">Reši</button>
+            <button onClick={() => zavrni(p.id)} className="text-red-500">Zavrni</button>
           </div>
         </div>
       ))}
+      <Toast sporocila={sporocila} odstraniSporocilo={odstraniSporocilo} />
     </div>
   );
 }
