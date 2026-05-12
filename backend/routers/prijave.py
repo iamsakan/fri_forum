@@ -2,13 +2,14 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, field_validator
 from database import supabase
 from dependencies import get_current_user, get_moderator
+from typing import Optional
 
 router = APIRouter(prefix="/prijave", tags=["prijave"])
 
 class NovaPrijava(BaseModel):
     razlog: str
-    objava_id: int = None
-    komentar_id: int = None
+    objava_id: Optional[int] = None
+    komentar_id: Optional[int] = None
 
     @field_validator("razlog")
     @classmethod
