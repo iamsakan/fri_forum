@@ -44,6 +44,14 @@ def glasuj(glas: NovGlas, current_user=Depends(get_current_user)):
     }).execute()
     return result.data[0]
 
+@router.get("/moji/komentarji")
+def get_moji_glasovi_komentarjev(current_user=Depends(get_current_user)):
+    result = supabase.table("glas_komentar")\
+        .select("komentar_id, tip")\
+        .eq("avtor_id", current_user.id)\
+        .execute()
+    return {str(g["komentar_id"]): g["tip"] for g in result.data}
+
 @router.get("/{objava_id}")
 def get_glasovi(objava_id: int):
     result = supabase.table("glas")\
@@ -86,11 +94,3 @@ def glasuj_komentar(glas: NovGlasKomentar, current_user=Depends(get_current_user
         "avtor_id": current_user.id
     }).execute()
     return result.data[0]
-
-@router.get("/moji/komentarji")
-def get_moji_glasovi_komentarjev(current_user=Depends(get_current_user)):
-    result = supabase.table("glas_komentar")\
-        .select("komentar_id, tip")\
-        .eq("avtor_id", current_user.id)\
-        .execute()
-    return {str(g["komentar_id"]): g["tip"] for g in result.data}
