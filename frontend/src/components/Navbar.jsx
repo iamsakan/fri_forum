@@ -53,22 +53,10 @@ export default function Navbar({ setQuery, refreshPosts }) {
               </div>
               FRI Forum
             </a>
-            <a
-              href="/"
-              className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block"
-            >
-              Feed
-            </a>
-            <a
-              href="/kategorije"
-              className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block"
-            >
-              Kategorije
-            </a>
           </div>
 
           {/* Search */}
-          <div className="flex-1 max-w-md">
+          <div className="flex-4 max-w-md">
             <SearchBar setQuery={setQuery} />
           </div>
 

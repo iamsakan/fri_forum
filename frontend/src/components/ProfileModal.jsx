@@ -10,8 +10,11 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
   const [aktivniTab, setAktivniTab] = useState("objave");
   const [loading, setLoading] = useState(false);
 
-  const [pfp, setPfp] = useState(null);
-  const fileInputRef = useRef(null);
+  const truncate = (text, maxLength) => {
+    if (!text) return "";
+
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -40,7 +43,7 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
           setBio(data.profil.bio || "");
         }
         setObjave(data.objave || []);
-        setKomentarji(data.komentarji || []);
+        setKomentarji((data.komentarji || []).slice().reverse());
       } catch (err) {
         console.log("ERROR:", err);
       } finally {
@@ -53,14 +56,17 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
 
   const saveProfile = async () => {
     const token = localStorage.getItem("token");
-    const res = await fetch("https://friforum-production.up.railway.app/profil/me", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
+    const res = await fetch(
+      "https://friforum-production.up.railway.app/profil/me",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({ uporabnisko_ime: uporabniskoIme, bio }),
       },
-      body: JSON.stringify({ uporabnisko_ime: uporabniskoIme, bio }),
-    });
+    );
     if (res.ok) {
       localStorage.setItem("uporabnisko_ime", uporabniskoIme);
       alert("Profil posodobljen!");
@@ -115,12 +121,7 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
 
           {/* Avatar + info */}
           <div className="flex items-center gap-4 mb-4">
-            <div
-              className="relative w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center cursor-pointer group overflow-hidden"
-              onClick={() => {
-                if (mode === "me") fileInputRef.current.click();
-              }}
-            >
+            <div className="relative w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden">
               {/* slika ali fallback */}
               {profil?.pfp_url ? (
                 <img
@@ -131,13 +132,6 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
                 <span className="text-blue-700 text-lg font-bold">
                   {inicialke}
                 </span>
-              )}
-
-              {/* hover overlay */}
-              {mode === "me" && (
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-                  <span className="text-white text-xs">✏️</span>
-                </div>
               )}
             </div>
             <div>
@@ -231,11 +225,9 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
           ) : aktivniTab === "objave" ? (
             objave.length === 0 ? (
               <p className="text-center text-gray-400 py-4 text-sm">
-                <p className="text-center text-gray-400 py-4 text-sm">
-                  {mode === "me"
-                    ? "Še nimate objav"
-                    : "Ta uporabnik še nima objav"}
-                </p>
+                {mode === "me"
+                  ? "Še nimate objav"
+                  : "Ta uporabnik še nima objav"}
               </p>
             ) : (
               <div className="flex flex-col gap-2">
@@ -246,7 +238,7 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
                     className="block p-3 rounded-lg hover:bg-gray-50 border border-gray-100 transition"
                   >
                     <p className="text-sm font-medium text-gray-900">
-                      {o.naslov}
+                      {truncate(o.naslov, 50)}
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
                       {o.kategorija?.naziv}
@@ -268,7 +260,9 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
                   key={k.id}
                   className="p-3 rounded-lg border border-gray-100"
                 >
-                  <p className="text-sm text-gray-700">{k.vsebina}</p>
+                  <p className="text-sm text-gray-700">
+                    {truncate(k.vsebina, 50)}
+                  </p>
                   <p className="text-xs text-gray-400 mt-1">
                     Na objavi: {k.objava?.naslov}
                   </p>
@@ -277,34 +271,6 @@ export default function ProfileModal({ open, setOpen, username, mode = "me" }) {
             </div>
           )}
         </div>
-        <input
-          type="file"
-          accept="image/*"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const formData = new FormData();
-            formData.append("file", file);
-
-            const token = localStorage.getItem("token");
-
-            const res = await fetch("https://friforum-production.up.railway.app/profil/pfp", {
-              method: "POST",
-              headers: {
-                Authorization: "Bearer " + token,
-              },
-              body: formData,
-            });
-
-            if (res.ok) {
-              const data = await res.json();
-              setProfil((p) => ({ ...p, pfp_url: data.url }));
-            }
-          }}
-        />
       </div>
     </div>
   );

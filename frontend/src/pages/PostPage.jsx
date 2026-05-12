@@ -19,7 +19,6 @@ function countAllComments(komentarji) {
   return count;
 }
 
-
 export default function PostPage() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -37,15 +36,58 @@ export default function PostPage() {
   const [komentarPreview, setKomentarPreview] = useState(null);
   const komentarFileRef = useRef(null);
   const { sporocila, dodajSporocilo, odstraniSporocilo } = useToast();
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const currentUserId = localStorage.getItem("user_id");
+  const isOwner = post && String(post.avtor_id) === String(currentUserId);
+
+  const deletePost = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const res = await fetch(
+      `https://friforum-production.up.railway.app/objave/${post.id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      },
+    );
+
+    if (res.ok) {
+      dodajSporocilo("Objava izbrisana", "success");
+      navigate("/"); // ali nazaj na feed
+    } else {
+      dodajSporocilo("Napaka pri brisanju", "warning");
+    }
+  };
+
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const loadAll = async () => {
       // Najprej glasovi
       const token = localStorage.getItem("token");
       if (token) {
-        const resGlasovi = await fetch("https://friforum-production.up.railway.app/glasovi/moji", {
-          headers: { Authorization: "Bearer " + token },
-        });
+        const resGlasovi = await fetch(
+          "https://friforum-production.up.railway.app/glasovi/moji",
+          {
+            headers: { Authorization: "Bearer " + token },
+          },
+        );
         if (resGlasovi.ok) {
           const glasoviData = await resGlasovi.json();
           localStorage.setItem("moji_glasovi", JSON.stringify(glasoviData));
@@ -54,41 +96,50 @@ export default function PostPage() {
       }
 
       // Potem objava
-      const resObjava = await fetch(`https://friforum-production.up.railway.app/objave/${id}`);
+      const resObjava = await fetch(
+        `https://friforum-production.up.railway.app/objave/${id}`,
+      );
       const objavaData = await resObjava.json();
       setPost(objavaData);
       setVotes(objavaData.skupaj_glasov || 0);
 
       // Priloge
-      const resPriloge = await fetch(`https://friforum-production.up.railway.app/objave/${id}/priloge`);
+      const resPriloge = await fetch(
+        `https://friforum-production.up.railway.app/objave/${id}/priloge`,
+      );
       const prilogeData = await resPriloge.json();
       setPriloge(Array.isArray(prilogeData) ? prilogeData : []);
 
       // Komentarji
-    const resKomentarji = await fetch(
+      const resKomentarji = await fetch(
         `https://friforum-production.up.railway.app/komentarji/${id}`,
-    );
-    const komentarjiData = await resKomentarji.json();
-    setKomentarji(Array.isArray(komentarjiData) ? komentarjiData : []);
+      );
+      const komentarjiData = await resKomentarji.json();
+      setKomentarji(Array.isArray(komentarjiData) ? komentarjiData : []);
 
-    // Glasovi na komentarjih
-    if (token) {
+      // Glasovi na komentarjih
+      if (token) {
         const resGlasoviKomentarjev = await fetch(
-            "https://friforum-production.up.railway.app/glasovi/moji/komentarji",
-            { headers: { Authorization: "Bearer " + token } }
+          "https://friforum-production.up.railway.app/glasovi/moji/komentarji",
+          { headers: { Authorization: "Bearer " + token } },
         );
         if (resGlasoviKomentarjev.ok) {
-            const glasoviKomentarjev = await resGlasoviKomentarjev.json();
-            localStorage.setItem("moji_glasovi_komentarjev", JSON.stringify(glasoviKomentarjev));
-            }
+          const glasoviKomentarjev = await resGlasoviKomentarjev.json();
+          localStorage.setItem(
+            "moji_glasovi_komentarjev",
+            JSON.stringify(glasoviKomentarjev),
+          );
         }
+      }
     };
 
     loadAll();
   }, [id]);
 
   const refreshKomentarji = async () => {
-    const res = await fetch(`https://friforum-production.up.railway.app/komentarji/${id}`);
+    const res = await fetch(
+      `https://friforum-production.up.railway.app/komentarji/${id}`,
+    );
     const data = await res.json();
     setKomentarji(Array.isArray(data) ? data : []);
   };
@@ -100,14 +151,17 @@ export default function PostPage() {
       return;
     }
 
-    const res = await fetch("https://friforum-production.up.railway.app/glasovi/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
+    const res = await fetch(
+      "https://friforum-production.up.railway.app/glasovi/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({ objava_id: parseInt(id), tip }),
       },
-      body: JSON.stringify({ objava_id: parseInt(id), tip }),
-    });
+    );
 
     if (res.ok) {
       if (userVote === tip) {
@@ -132,27 +186,33 @@ export default function PostPage() {
     if (!novKomentar.trim()) return;
 
     setLoading(true);
-    const res = await fetch("https://friforum-production.up.railway.app/komentarji/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
+    const res = await fetch(
+      "https://friforum-production.up.railway.app/komentarji/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({ vsebina: novKomentar, objava_id: parseInt(id) }),
       },
-      body: JSON.stringify({ vsebina: novKomentar, objava_id: parseInt(id) }),
-    });
+    );
 
     if (res.ok) {
       const komentar = await res.json();
-      
+
       // Upload slike če obstaja
       if (komentarFile) {
         const formData = new FormData();
         formData.append("datoteka", komentarFile);
-        await fetch(`https://friforum-production.up.railway.app/komentarji/${komentar.id}/priloge`, {
-          method: "POST",
-          headers: { Authorization: "Bearer " + token },
-          body: formData,
-        });
+        await fetch(
+          `https://friforum-production.up.railway.app/komentarji/${komentar.id}/priloge`,
+          {
+            method: "POST",
+            headers: { Authorization: "Bearer " + token },
+            body: formData,
+          },
+        );
         setKomentarFile(null);
         setKomentarPreview(null);
       }
@@ -161,26 +221,26 @@ export default function PostPage() {
       await refreshKomentarji();
     }
     setLoading(false);
-};
+  };
 
-    const report = async (tip, idTarget) => {
+  const report = async (tip, idTarget) => {
     const token = localStorage.getItem("token");
     if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
 
     await fetch("https://friforum-production.up.railway.app/prijave/", {
-        method: "POST",
-        headers: {
+      method: "POST",
+      headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + token,
-        },
-        body: JSON.stringify({
+      },
+      body: JSON.stringify({
         tip,
         target_id: idTarget,
-        }),
+      }),
     });
 
     dodajSporocilo("Prijavljeno!", "success");
-    };
+  };
 
   const casNazaj = (datum) => {
     const diff = Math.floor((new Date() - new Date(datum + "Z")) / 1000);
@@ -188,7 +248,7 @@ export default function PostPage() {
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return `${Math.floor(diff / 86400)}d ago`;
-};
+  };
 
   if (!post)
     return (
@@ -233,7 +293,7 @@ export default function PostPage() {
             </span>
           )}
 
-          <h1 className="text-xl font-bold text-gray-900 mb-3">
+          <h1 className="text-xl font-bold text-gray-900 mb-3 break-words">
             {post.naslov}
           </h1>
 
@@ -256,125 +316,190 @@ export default function PostPage() {
             <span>{casNazaj(post.cas_objave)}</span>
           </div>
 
-          <p className="text-gray-700 leading-relaxed mb-6">{post.vsebina}</p>
+          <p className="text-gray-700 leading-relaxed mb-6 break-words">
+            {post.vsebina}
+          </p>
 
           {/* Priloge */}
-            {priloge.length > 0 && (
-                <div className="flex flex-col gap-2 mb-4">
-                    {priloge.map((p) => (
-                        p.tip_datoteke.startsWith("image/") ? (
-                            <a key={p.id} href={p.pot} target="_blank" rel="noopener noreferrer">
-                                <img src={p.pot} alt={p.ime_datoteke} className="rounded-lg max-h-96 object-contain border border-gray-200 cursor-pointer hover:opacity-90 transition" />
-                            </a>
-                        ) : (
-                            <a key={p.id} href={p.pot} target="_blank" className="text-blue-600 hover:underline text-sm">📎 {p.ime_datoteke}</a>
-                        )
-                    ))}
-                </div>
-            )}
+          {priloge.length > 0 && (
+            <div className="flex flex-col gap-2 mb-4">
+              {priloge.map((p) =>
+                p.tip_datoteke.startsWith("image/") ? (
+                  <a
+                    key={p.id}
+                    href={p.pot}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <div className="flex justify-center">
+                      <img
+                        src={p.pot}
+                        alt={p.ime_datoteke}
+                        className="rounded-lg max-h-96 object-contain border border-gray-200 cursor-pointer hover:opacity-90 transition"
+                      />
+                    </div>
+                  </a>
+                ) : (
+                  <a
+                    key={p.id}
+                    href={p.pot}
+                    target="_blank"
+                    className="text-blue-600 hover:underline text-sm"
+                  >
+                    📎 {p.ime_datoteke}
+                  </a>
+                ),
+              )}
+            </div>
+          )}
 
-          <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-            <button
-              onClick={() => vote("up")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition text-sm font-medium ${
-                userVote === "up"
-                  ? "bg-blue-50 border-blue-200 text-blue-600"
-                  : "border-gray-200 text-gray-500 hover:border-gray-300"
-              }`}
-            >
-              ↑ Upvote
-            </button>
-            <span
-              className={`text-sm font-semibold ${votes > 0 ? "text-blue-600" : votes < 0 ? "text-red-500" : "text-gray-500"}`}
-            >
-              {votes}
-            </span>
-            <button
-              onClick={() => vote("down")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition text-sm ${
-                userVote === "down"
-                  ? "bg-red-50 border-red-200 text-red-500"
-                  : "border-gray-200 text-gray-500 hover:border-gray-300"
-              }`}
-            >
-              ↓ Downvote
-            </button>
-            <button
-              onClick={() => report("objava", post.id)}
-              className="text-xs text-red-500 ml-2"
-            >
-              Report
-            </button>
-            <span className="text-sm text-gray-400 ml-2">
-              💬 {countAllComments(komentarji)} komentarjev
-            </span>
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => vote("up")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition text-sm font-medium ${
+                  userVote === "up"
+                    ? "bg-blue-50 border-blue-200 text-blue-600"
+                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                }`}
+              >
+                ↑ Upvote
+              </button>
+
+              <span
+                className={`text-sm font-semibold ${
+                  votes > 0
+                    ? "text-blue-600"
+                    : votes < 0
+                      ? "text-red-500"
+                      : "text-gray-500"
+                }`}
+              >
+                {votes}
+              </span>
+
+              <button
+                onClick={() => vote("down")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition text-sm ${
+                  userVote === "down"
+                    ? "bg-red-50 border-red-200 text-red-500"
+                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                }`}
+              >
+                ↓ Downvote
+              </button>
+
+              <span className="text-sm text-gray-400 ml-2">
+                💬 {countAllComments(komentarji)} komentarjev
+              </span>
+            </div>
+
+            {/* KEBAB MENU */}
+            <div className="relative flex items-center" ref={menuRef}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen((prev) => !prev);
+                }}
+                className="text-2xl leading-none text-gray-400 hover:text-gray-700 flex items-center"
+              >
+                ⋮
+              </button>
+
+              {menuOpen && (
+                <div className="absolute right-0 top-8 w-36 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10">
+                  <button
+                    onClick={() => report("objava", post.id)}
+                    className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
+                  >
+                    Report
+                  </button>
+
+                  {isOwner && (
+                    <button
+                      onClick={deletePost}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Dodaj komentar */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
-        <div className="flex gap-3">
+          <div className="flex gap-3">
             <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-            <span className="text-gray-400 text-xs">?</span>
+              <span className="text-gray-400 text-xs">?</span>
             </div>
-            <div className="flex-1">
-            <textarea
+            <div className="flex-1 min-w-0">
+              <textarea
                 value={novKomentar}
                 onChange={(e) => setNovKomentar(e.target.value)}
                 placeholder="Share your thoughts..."
                 rows={3}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 resize-none"
-            />
-            {komentarPreview && (
+              />
+              {komentarPreview && (
                 <div className="mt-2 rounded-lg overflow-hidden border border-gray-200">
-                <img src={komentarPreview} alt="preview" className="w-full max-h-40 object-cover" />
+                  <img
+                    src={komentarPreview}
+                    alt="preview"
+                    className="w-full max-h-40 object-cover"
+                  />
                 </div>
-            )}
-            <div className="flex items-center gap-2 mt-2">
+              )}
+              <div className="flex items-center gap-2 mt-2">
                 <button
-                onClick={dodajKomentar}
-                disabled={loading || !novKomentar.trim()}
-                className="bg-gray-700 text-white text-sm px-4 py-1.5 rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
+                  onClick={dodajKomentar}
+                  disabled={loading || !novKomentar.trim()}
+                  className="bg-gray-700 text-white text-sm px-4 py-1.5 rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
                 >
-                {loading ? "Pošiljam..." : "Post Comment"}
+                  {loading ? "Pošiljam..." : "Post Comment"}
                 </button>
                 <button
-                onClick={() => komentarFileRef.current.click()}
-                className="text-sm px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                  onClick={() => komentarFileRef.current.click()}
+                  className="text-sm px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
                 >
-                📎 Dodaj sliko
+                  📎 Dodaj sliko
                 </button>
                 {komentarFile && (
-                <button
-                    onClick={() => { setKomentarFile(null); setKomentarPreview(null); }}
+                  <button
+                    onClick={() => {
+                      setKomentarFile(null);
+                      setKomentarPreview(null);
+                    }}
                     className="text-sm text-red-500 hover:text-red-700"
-                >
+                  >
                     odstrani
-                </button>
+                  </button>
                 )}
-            </div>
-            <input
+              </div>
+              <input
                 ref={komentarFileRef}
                 type="file"
                 accept="image/*"
                 className="hidden"
                 onChange={(e) => {
-                const f = e.target.files[0];
-                if (!f) return;
-                setKomentarFile(f);
-                setKomentarPreview(URL.createObjectURL(f));
+                  const f = e.target.files[0];
+                  if (!f) return;
+                  setKomentarFile(f);
+                  setKomentarPreview(URL.createObjectURL(f));
                 }}
-            />
+              />
             </div>
-        </div>
+          </div>
         </div>
 
         {/* Komentarji */}
         <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <h3 className="font-semibold text-gray-900 mb-4">
-                {countAllComments(komentarji)}{" "}
-                {countAllComments(komentarji) === 1 ? "Comment" : "Comments"}
-            </h3>
+          <h3 className="font-semibold text-gray-900 mb-4">
+            {countAllComments(komentarji)}{" "}
+            {countAllComments(komentarji) === 1 ? "Comment" : "Comments"}
+          </h3>
 
           {komentarji.length === 0 ? (
             <p className="text-center text-gray-400 py-6 text-sm">
@@ -418,39 +543,82 @@ function KomentarKomponenta({
 }) {
   const navigate = useNavigate();
   const [score, setScore] = useState(komentar.glasovi || 0);
-    const shranjeniGlasoviKomentarjev = JSON.parse(
-        localStorage.getItem("moji_glasovi_komentarjev") || "{}"
-    );
-    const [userVote, setUserVote] = useState(
-        shranjeniGlasoviKomentarjev[String(komentar.id)] || null
-    );
+  const shranjeniGlasoviKomentarjev = JSON.parse(
+    localStorage.getItem("moji_glasovi_komentarjev") || "{}",
+  );
+  const [userVote, setUserVote] = useState(
+    shranjeniGlasoviKomentarjev[String(komentar.id)] || null,
+  );
   const [showOdgovor, setShowOdgovor] = useState(false);
   const [novOdgovor, setNovOdgovor] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [priloge, setPriloge] = useState([]);
+  const currentUserId = localStorage.getItem("user_id");
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const menuRef = useRef(null);
 
-    useEffect(() => {
-        fetch(`https://friforum-production.up.railway.app/komentarji/${komentar.id}/priloge`)
-            .then(res => res.json())
-            .then(data => setPriloge(Array.isArray(data) ? data : []));
-    }, [komentar.id]);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const isCommentOwner =
+    komentar.avtor_id && String(komentar.avtor_id) === String(currentUserId);
+  const deleteComment = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const res = await fetch(
+      `https://friforum-production.up.railway.app/komentarji/${komentar.id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      },
+    );
+
+    if (res.ok) {
+      dodajSporocilo("Komentar izbrisan", "success");
+      await refreshKomentarji();
+    } else {
+      dodajSporocilo("Napaka pri brisanju", "warning");
+    }
+  };
+
+  useEffect(() => {
+    fetch(
+      `https://friforum-production.up.railway.app/komentarji/${komentar.id}/priloge`,
+    )
+      .then((res) => res.json())
+      .then((data) => setPriloge(Array.isArray(data) ? data : []));
+  }, [komentar.id]);
 
   const voteComment = async (tip) => {
     const token = localStorage.getItem("token");
     if (!token) return dodajSporocilo("Moraš biti prijavljen", "warning");
 
-    const res = await fetch("https://friforum-production.up.railway.app/glasovi/komentar", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
+    const res = await fetch(
+      "https://friforum-production.up.railway.app/glasovi/komentar",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({
+          komentar_id: komentar.id,
+          tip,
+        }),
       },
-      body: JSON.stringify({
-        komentar_id: komentar.id,
-        tip,
-      }),
-    });
+    );
 
     if (res.ok) {
       if (userVote === tip) {
@@ -464,7 +632,7 @@ function KomentarKomponenta({
         setUserVote(tip);
       }
     }
-};
+  };
 
   const report = async (tip, idTarget) => {
     const token = localStorage.getItem("token");
@@ -498,18 +666,21 @@ function KomentarKomponenta({
     if (!novOdgovor.trim()) return;
 
     setLoading(true);
-    const res = await fetch("https://friforum-production.up.railway.app/komentarji/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
+    const res = await fetch(
+      "https://friforum-production.up.railway.app/komentarji/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({
+          vsebina: novOdgovor,
+          objava_id: parseInt(objavaId),
+          stars_id: komentar.id,
+        }),
       },
-      body: JSON.stringify({
-        vsebina: novOdgovor,
-        objava_id: parseInt(objavaId),
-        stars_id: komentar.id,
-      }),
-    });
+    );
 
     if (res.ok) {
       setNovOdgovor("");
@@ -520,58 +691,103 @@ function KomentarKomponenta({
   };
 
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3 min-w-0">
       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
         <span className="text-blue-700 font-bold" style={{ fontSize: "9px" }}>
           {inicialke}
         </span>
       </div>
-      <div className="flex-1">
-        <div className="flex items-center gap-2 mb-1">
-          <span
-            onClick={() => openProfile(komentar.profil?.uporabnisko_ime)}
-            className="text-sm font-medium text-gray-900 cursor-pointer hover:underline"
-          >
-            {komentar.profil?.uporabnisko_ime || "Anon"}
-          </span>
-          <span className="text-xs text-gray-400">
-            {casNazaj(komentar.cas)}
-          </span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <span
+              onClick={() => openProfile(komentar.profil?.uporabnisko_ime)}
+              className="text-sm font-medium text-gray-900 cursor-pointer hover:underline"
+            >
+              {komentar.profil?.uporabnisko_ime || "Anon"}
+            </span>
+            <span className="text-xs text-gray-400">
+              {casNazaj(komentar.cas)}
+            </span>
+          </div>
+
+          {/* KEBAB MENU */}
+          <div className="relative flex items-center" ref={menuRef}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenMenuId(openMenuId === komentar.id ? null : komentar.id);
+              }}
+            >
+              ⋮
+            </button>
+
+            {openMenuId === komentar.id && (
+              <div className="absolute right-0 top-6 w-36 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-10">
+                <button
+                  onClick={() => report("komentar", komentar.id)}
+                  className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
+                >
+                  Report
+                </button>
+
+                {isCommentOwner && (
+                  <button
+                    onClick={deleteComment}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-        <p className="text-sm text-gray-700 mb-2">{komentar.vsebina}</p>
+        <p className="text-sm text-gray-700 mb-2 break-words">
+          {komentar.vsebina}
+        </p>
         {priloge.length > 0 && (
-        <div className="flex flex-col gap-1 mb-2">
-                {priloge.map((p) => (
-                    <a key={p.id} href={p.pot} target="_blank" rel="noopener noreferrer">
-                        <img src={p.pot} alt={p.ime_datoteke} className="rounded-lg max-h-60 object-contain border border-gray-200 cursor-pointer hover:opacity-90 transition" />
-                    </a>
-                ))}
-            </div>
+          <div className="flex flex-col gap-1 mb-2">
+            {priloge.map((p) => (
+              <a
+                key={p.id}
+                href={p.pot}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src={p.pot}
+                  alt={p.ime_datoteke}
+                  className="rounded-lg max-h-60 object-contain border border-gray-200 cursor-pointer hover:opacity-90 transition"
+                />
+              </a>
+            ))}
+          </div>
         )}
         <div className="flex items-center gap-2 text-sm text-gray-500">
-            <button
-                onClick={() => voteComment("up")}
-                className={`px-2 py-1 rounded-lg border text-sm transition ${
-                userVote === "up"
-                    ? "bg-blue-50 border-blue-200 text-blue-600"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300"
-                }`}
-            >
-                ↑
-            </button>
+          <button
+            onClick={() => voteComment("up")}
+            className={`px-2 py-1 rounded-lg border text-sm transition ${
+              userVote === "up"
+                ? "bg-blue-50 border-blue-200 text-blue-600"
+                : "border-gray-200 text-gray-500 hover:border-gray-300"
+            }`}
+          >
+            ↑
+          </button>
 
-            <span className="text-sm font-semibold">{score}</span>
+          <span className="text-sm font-semibold">{score}</span>
 
-            <button
-                onClick={() => voteComment("down")}
-                className={`px-2 py-1 rounded-lg border text-sm transition ${
-                userVote === "down"
-                    ? "bg-red-50 border-red-200 text-red-500"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300"
-                }`}
-            >
-                ↓
-            </button>
+          <button
+            onClick={() => voteComment("down")}
+            className={`px-2 py-1 rounded-lg border text-sm transition ${
+              userVote === "down"
+                ? "bg-red-50 border-red-200 text-red-500"
+                : "border-gray-200 text-gray-500 hover:border-gray-300"
+            }`}
+          >
+            ↓
+          </button>
         </div>
         <button
           onClick={() => setShowOdgovor(!showOdgovor)}

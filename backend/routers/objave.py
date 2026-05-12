@@ -44,8 +44,16 @@ def get_objave(
     if sort == "new":
         query = query.order("cas_objave", desc=True)
     
-    result = query.execute()
-    objave = result.data
+    count_query = supabase.table("objava").select("*", count="exact")
+
+    if kategorija_id:
+        count_query = count_query.eq("kategorija_id", kategorija_id)
+
+    if q:
+        count_query = count_query.or_(f"naslov.ilike.%{q}%,vsebina.ilike.%{q}%")
+
+    count_result = count_query.execute()
+    total_count = count_result.count
 
     for objava in objave:
         glasovi = objava.pop("glas", [])
@@ -58,15 +66,18 @@ def get_objave(
     if sort == "top":
         objave = sorted(objave, key=lambda x: x["skupaj_glasov"], reverse=True)
 
-    start = (page - 1) * limit
-    end = start + limit
-    stran = objave[start:end]
+    from_idx = (page - 1) * limit
+    to_idx = from_idx + limit - 1
+
+    result = query.range(from_idx, to_idx).execute()
+    objave = result.data
 
     return {
-        "objave": stran,
+        "objave": objave,
         "page": page,
         "limit": limit,
-        "ima_vec": end < len(objave)
+        "total_count": total_count,
+        "total_pages": (total_count + limit - 1) // limit
     }
 
 @router.get("/{id}")
