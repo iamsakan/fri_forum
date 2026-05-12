@@ -12,15 +12,18 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://friforum-production.up.railway.app/auth/registracija", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          geslo,
-          uporabnisko_ime: uporabniskoIme,
-        }),
-      });
+      const res = await fetch(
+        "https://friforum-production.up.railway.app/auth/registracija",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            geslo,
+            uporabnisko_ime: uporabniskoIme,
+          }),
+        },
+      );
 
       const data = await res.json().catch(() => null);
 
@@ -63,24 +66,34 @@ export default function Register() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-8 relative">
+          <a
+            href="/"
+            className="absolute left-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50 transition"
+          >
+            <i className="fas fa-arrow-left"></i>
+          </a>
+
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold">F</span>
             </div>
+
             <span className="text-xl font-bold text-gray-900">FRI Forum</span>
           </div>
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
-          <h1 className="text-xl font-bold text-gray-900 mb-1">
-            Ustvari račun
-          </h1>
-          <p className="text-sm text-gray-500 mb-6">
-            Registriraj se v FRI Forum
-          </p>
-
+          {/* Header */}
+          <div className="relative flex items-center justify-center mb-6">
+            <div className="text-center">
+              <h1 className="text-xl font-bold text-gray-900">Ustvari račun</h1>
+              <p className="text-sm text-gray-500 mt-1">
+                Registriraj se v FRI Forum
+              </p>
+            </div>
+          </div>
           <div className="flex flex-col gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
