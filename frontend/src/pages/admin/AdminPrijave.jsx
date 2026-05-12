@@ -5,10 +5,12 @@ import { useToast } from "../../hooks/useToast";
 
 export default function AdminPrijave() {
   const [prijave, setPrijave] = useState([]);
+  const [filter, setFilter] = useState("caka");
   const { sporocila, dodajSporocilo, odstraniSporocilo } = useToast();
 
   const load = async () => {
-    setPrijave(await adminFetch("/prijave/"));
+    const url = filter === "caka" ? "/prijave/" : filter === "resene" ? "/prijave/resene" : "/prijave/zavrnjene";
+    setPrijave(await adminFetch(url));
   };
 
   const resi = async (id) => {
@@ -25,11 +27,32 @@ export default function AdminPrijave() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [filter]);
 
   return (
     <div>
       <h1 className="text-xl font-bold mb-4">Prijave</h1>
+
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => setFilter("caka")}
+          className={`px-3 py-1.5 rounded-lg border text-sm ${filter === "caka" ? "bg-gray-900 text-white" : "border-gray-200 text-gray-600"}`}
+        >
+          Nove
+        </button>
+        <button
+          onClick={() => setFilter("resene")}
+          className={`px-3 py-1.5 rounded-lg border text-sm ${filter === "resene" ? "bg-gray-900 text-white" : "border-gray-200 text-gray-600"}`}
+        >
+          Rešene
+        </button>
+        <button
+          onClick={() => setFilter("zavrnjene")}
+          className={`px-3 py-1.5 rounded-lg border text-sm ${filter === "zavrnjene" ? "bg-gray-900 text-white" : "border-gray-200 text-gray-600"}`}
+        >
+          Zavrnjene
+        </button>
+      </div>
 
       {prijave.map((p) => (
         <div key={p.id} className="bg-white p-3 border mb-2">
@@ -38,7 +61,6 @@ export default function AdminPrijave() {
           </p>
 
           {p.objava ? (
-            
             <a href={`/objava/${p.objava_id}`}
               target="_blank"
               className="font-semibold text-blue-600 hover:underline"
@@ -46,7 +68,6 @@ export default function AdminPrijave() {
               {p.objava.naslov}
             </a>
           ) : (
-  
             <a href={`/objava/${p.komentar?.objava_id}`}
               target="_blank"
               className="text-gray-800 hover:underline"
@@ -60,10 +81,12 @@ export default function AdminPrijave() {
             Prijavil: {p.profil?.uporabnisko_ime || "Neznan"}
           </p>
 
-          <div className="flex gap-2 mt-2">
-            <button onClick={() => resi(p.id)} className="text-green-600">Reši</button>
-            <button onClick={() => zavrni(p.id)} className="text-red-500">Zavrni</button>
-          </div>
+          {filter === "caka" && (
+            <div className="flex gap-2 mt-2">
+              <button onClick={() => resi(p.id)} className="text-green-600">Reši</button>
+              <button onClick={() => zavrni(p.id)} className="text-red-500">Zavrni</button>
+            </div>
+          )}
         </div>
       ))}
       <Toast sporocila={sporocila} odstraniSporocilo={odstraniSporocilo} />

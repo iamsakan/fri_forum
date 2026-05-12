@@ -50,3 +50,21 @@ def resi_prijavo(id: int, current_user=Depends(get_moderator)):
 def zavrni_prijavo(id: int, current_user=Depends(get_moderator)):
     supabase.table("prijava").update({"status": "zavrnjeno"}).eq("id", id).execute()
     return {"sporocilo": "Prijava zavrnjena"}
+
+@router.get("/resene")
+def get_resene_prijave(current_user=Depends(get_moderator)):
+    result = supabase.table("prijava")\
+        .select("*, profil(uporabnisko_ime), objava(naslov), komentar(vsebina, objava_id)")\
+        .eq("status", "reseno")\
+        .order("cas", desc=True)\
+        .execute()
+    return result.data
+
+@router.get("/zavrnjene")
+def get_zavrnjene_prijave(current_user=Depends(get_moderator)):
+    result = supabase.table("prijava")\
+        .select("*, profil(uporabnisko_ime), objava(naslov), komentar(vsebina, objava_id)")\
+        .eq("status", "zavrnjeno")\
+        .order("cas", desc=True)\
+        .execute()
+    return result.data
