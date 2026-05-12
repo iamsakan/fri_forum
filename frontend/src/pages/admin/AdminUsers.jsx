@@ -71,7 +71,7 @@ export default function AdminUsers() {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              {u.vloga !== "blokiran" && (
+              {u.vloga !== "blokiran" && u.vloga !== "admin" && u.uporabnisko_ime !== currentUsername && (
                 <select
                   value={u.vloga}
                   onChange={(e) => changeRole(u.id, e.target.value)}
