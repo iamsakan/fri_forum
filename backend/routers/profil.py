@@ -27,8 +27,9 @@ def get_moj_profil(current_user=Depends(get_current_user)):
         .execute()
     
     komentarji = supabase.table("komentar")\
-        .select("*")\
+        .select("*, objava(naslov)")\
         .eq("avtor_id", current_user.id)\
+        .order("cas", desc=True)\
         .execute()
 
     glasovi = supabase.table("glas")\
