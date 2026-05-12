@@ -65,7 +65,7 @@ def get_profil(username: str):
     
     komentarji = supabase.table("komentar")\
         .select("*, objava(naslov)")\
-        .eq("avtor_id", current_user.id)\
+        .eq("avtor_id", id)\
         .order("cas", desc=True)\
         .execute()
     
