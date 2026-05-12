@@ -33,17 +33,17 @@ def get_objave(
     limit: int = Query(10)
 ):
     query = supabase.table("objava")\
-    .select("*, kategorija(naziv, barva), profil(uporabnisko_ime), glas(tip), komentar(id)")
+        .select("*, kategorija(naziv, barva), profil(uporabnisko_ime), glas(tip), komentar(id)")
     
     if kategorija_id:
         query = query.eq("kategorija_id", kategorija_id)
     
     if q:
         query = query.or_(f"naslov.ilike.%{q}%,vsebina.ilike.%{q}%")
-    
+
     if sort == "new":
         query = query.order("cas_objave", desc=True)
-    
+
     result = query.execute()
     objave = result.data
 
@@ -58,6 +58,9 @@ def get_objave(
     if sort == "top":
         objave = sorted(objave, key=lambda x: x["skupaj_glasov"], reverse=True)
 
+    total_count = len(objave)
+    total_pages = max(1, (total_count + limit - 1) // limit)
+    
     start = (page - 1) * limit
     end = start + limit
     stran = objave[start:end]
@@ -66,7 +69,8 @@ def get_objave(
         "objave": stran,
         "page": page,
         "limit": limit,
-        "ima_vec": end < len(objave)
+        "total_count": total_count,
+        "total_pages": total_pages
     }
 
 @router.get("/{id}")
