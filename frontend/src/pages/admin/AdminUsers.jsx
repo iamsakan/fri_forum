@@ -20,13 +20,23 @@ export default function AdminUsers() {
   };
 
   const changeRole = async (id, vloga) => {
-  await adminFetch(`/admin/uporabniki/${id}/vloga`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ vloga }),
-  });
-  dodajSporocilo("Vloga spremenjena!", "success");
-  load();
+    await adminFetch(`/admin/uporabniki/${id}/vloga`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ vloga }),
+    });
+    dodajSporocilo("Vloga spremenjena!", "success");
+    load();
+  };
+
+  const unblock = async (id) => {
+    await adminFetch(`/admin/uporabniki/${id}/vloga`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ vloga: "uporabnik" }),
+    });
+    dodajSporocilo("Uporabnik odblokirán!", "success");
+    load();
   };
 
   useEffect(() => {
@@ -71,13 +81,21 @@ export default function AdminUsers() {
                   <option value="admin">Admin</option>
                 </select>
               )}
-              <button
-                onClick={() => setConfirmId(u.id)}
-                disabled={u.vloga === "blokiran"}
-                className="text-red-500 text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:underline"
-              >
-                {u.vloga === "blokiran" ? "Blokiran" : "Blokiraj"}
-              </button>
+              {u.vloga === "blokiran" ? (
+                <button
+                  onClick={() => unblock(u.id)}
+                  className="text-green-600 text-sm hover:underline"
+                >
+                  Odblokiraj
+                </button>
+              ) : (
+                <button
+                  onClick={() => setConfirmId(u.id)}
+                  className="text-red-500 text-sm hover:underline"
+                >
+                  Blokiraj
+                </button>
+              )}
             </div>
           )}
         </div>
