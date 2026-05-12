@@ -19,6 +19,16 @@ export default function AdminUsers() {
     load();
   };
 
+  const changeRole = async (id, vloga) => {
+  await adminFetch(`/admin/uporabniki/${id}/vloga`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ vloga }),
+  });
+  dodajSporocilo("Vloga spremenjena!", "success");
+  load();
+  };
+
   useEffect(() => {
     load();
   }, []);
@@ -49,13 +59,26 @@ export default function AdminUsers() {
               <button onClick={() => setConfirmId(null)} className="text-sm px-2 py-1 border border-gray-200 rounded-lg hover:bg-gray-50 transition">Ne</button>
             </div>
           ) : (
-            <button
-              onClick={() => setConfirmId(u.id)}
-              disabled={u.vloga === "blokiran"}
-              className="text-red-500 text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:underline"
-            >
-              {u.vloga === "blokiran" ? "Blokiran" : "Blokiraj"}
-            </button>
+            <div className="flex items-center gap-2">
+              {u.vloga !== "blokiran" && (
+                <select
+                  value={u.vloga}
+                  onChange={(e) => changeRole(u.id, e.target.value)}
+                  className="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:outline-none"
+                >
+                  <option value="uporabnik">Uporabnik</option>
+                  <option value="moderator">Moderator</option>
+                  <option value="admin">Admin</option>
+                </select>
+              )}
+              <button
+                onClick={() => setConfirmId(u.id)}
+                disabled={u.vloga === "blokiran"}
+                className="text-red-500 text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:underline"
+              >
+                {u.vloga === "blokiran" ? "Blokiran" : "Blokiraj"}
+              </button>
+            </div>
           )}
         </div>
       ))}
