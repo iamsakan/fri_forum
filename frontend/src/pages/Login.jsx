@@ -44,17 +44,17 @@ export default function Login() {
         },
       );
 
-      if (profilRes.ok) {
-        const profilData = await profilRes.json();
-
-        const vloga = profilData.profil.vloga;
-
-        localStorage.setItem("vloga", vloga);
-        if (vloga === "blokiran") {
+      if (profilRes.status === 403) {
           setError("Vaš račun je bil blokiran");
           localStorage.removeItem("token");
+          localStorage.removeItem("user_id");
           return;
-        }
+      }
+
+      if (profilRes.ok) {
+          const profilData = await profilRes.json();
+          const vloga = profilData.profil.vloga;
+          localStorage.setItem("vloga", vloga);
         localStorage.setItem(
           "uporabnisko_ime",
           profilData.profil.uporabnisko_ime,
