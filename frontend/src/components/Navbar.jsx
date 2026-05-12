@@ -64,6 +64,14 @@ export default function Navbar({ setQuery, refreshPosts }) {
           <div className="flex items-center gap-3 shrink-0">
             {isLoggedIn ? (
               <>
+                {localStorage.getItem("vloga") === "admin" && (
+      
+                  <a href="/admin/objave"
+                    className="text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    Admin
+                  </a>
+                )}
                 <button
                   onClick={() => setOpenModal(true)}
                   className="flex items-center gap-1 bg-gray-900 text-white text-sm px-3 py-1.5 rounded-lg hover:bg-gray-700 transition"

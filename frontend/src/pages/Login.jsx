@@ -55,11 +55,7 @@ export default function Login() {
           profilData.profil.uporabnisko_ime,
         );
 
-        if (vloga === "admin") {
-          window.location.href = "/admin/objave";
-        } else {
-          window.location.href = "/";
-        }
+        window.location.href = "/";
       }
     } catch (err) {
       setError("Napaka pri povezavi s strežnikom");
