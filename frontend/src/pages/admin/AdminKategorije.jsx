@@ -28,6 +28,11 @@ export default function AdminKategorije() {
   };
 
   const del = async (id) => {
+    const confirmDelete = window.confirm(
+      "Ali si prepričan, da želiš izbrisati kategorijo?",
+    );
+
+    if (!confirmDelete) return;
     await adminFetch(`/admin/kategorije/${id}`, { method: "DELETE" });
     load();
   };
@@ -82,7 +87,7 @@ export default function AdminKategorije() {
             {k.naziv}
           </div>
 
-          <button onClick={() => del(k.id)} className="text-red-500">
+          <button onClick={() => del(k.id)} className="text-red-500 cursor-pointer hover:underline">
             Delete
           </button>
         </div>

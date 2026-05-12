@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import PostList from "../components/PostList";
 import SortBar from "../components/SortBar";
 import CategoryFilter from "../components/CategoryFilter";
+import ProfileModal from "../components/ProfileModal";
 
 export default function Home() {
   const [totalPages, setTotalPages] = useState(1);
@@ -13,6 +15,10 @@ export default function Home() {
   const [aktivnaKategorija, setAktivnaKategorija] = useState(null);
   const [page, setPage] = useState(1);
   const pageSize = 10;
+  const location = useLocation();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [profileMode, setProfileMode] = useState("user");
 
   const fetchPosts = () => {
     let url = `https://friforum-production.up.railway.app/objave/?sort=${sort}&page=${page}&limit=${pageSize}`;
@@ -23,7 +29,7 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => {
         setPosts(data.objave || []);
-        setTotalPages(data.total_pages || 1); 
+        setTotalPages(data.total_pages || 1);
       });
   };
 
@@ -48,6 +54,12 @@ export default function Home() {
     fetchMojiGlasovi();
   }, []);
 
+  useEffect(() => {
+    if (location.state?.openProfile) {
+      openProfile(location.state.openProfile);
+    }
+  }, [location.state]);
+
   const fetchKategorije = () => {
     fetch("https://friforum-production.up.railway.app/kategorije")
       .then((res) => res.json())
@@ -65,6 +77,11 @@ export default function Home() {
   useEffect(() => {
     setPage(1);
   }, [sort, query, aktivnaKategorija]);
+  const openProfile = (username) => {
+    setSelectedUser(username);
+    setProfileMode("user");
+    setProfileOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -168,6 +185,12 @@ export default function Home() {
           </button>
         </div>
       </div>
+      <ProfileModal
+        open={profileOpen}
+        setOpen={setProfileOpen}
+        username={selectedUser}
+        mode={profileMode}
+      />
     </div>
   );
 }
