@@ -67,6 +67,17 @@ def dodaj_komentar(komentar: NovKomentar, current_user=Depends(get_current_user)
         "avtor_id": current_user.id,
         "stars_id": komentar.stars_id
     }).execute()
+
+    # Poišči avtorja objave in mu pošlji notifikacijo
+    objava = supabase.table("objava").select("avtor_id").eq("id", komentar.objava_id).single().execute()
+    if objava.data and objava.data["avtor_id"] != current_user.id:
+        supabase.table("notifikacije").insert({
+            "uporabnik_id": objava.data["avtor_id"],
+            "tip": "komentar",
+            "objava_id": komentar.objava_id,
+            "sporocilo": f"{current_user.uporabnisko_ime} je komentiral tvojo objavo"
+        }).execute()
+
     return result.data[0]
 
 @router.delete("/{id}")
