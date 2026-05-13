@@ -69,14 +69,19 @@ def dodaj_komentar(komentar: NovKomentar, current_user=Depends(get_current_user)
     }).execute()
 
     # Poišči avtorja objave in mu pošlji notifikacijo
-    objava = supabase.table("objava").select("avtor_id").eq("id", komentar.objava_id).single().execute()
-    if objava.data and objava.data["avtor_id"] != current_user.id:
-        supabase.table("notifikacije").insert({
-            "uporabnik_id": objava.data["avtor_id"],
-            "tip": "komentar",
-            "objava_id": komentar.objava_id,
-            "sporocilo": f"{current_user.uporabnisko_ime} je komentiral tvojo objavo"
-        }).execute()
+    try:
+        objava = supabase.table("objava").select("avtor_id").eq("id", komentar.objava_id).single().execute()
+        if objava.data and objava.data["avtor_id"] != str(current_user.id):
+            profil = supabase.table("profil").select("uporabnisko_ime").eq("id", str(current_user.id)).single().execute()
+            ime = profil.data["uporabnisko_ime"] if profil.data else "Nekdo"
+            supabase.table("notifikacije").insert({
+                "uporabnik_id": objava.data["avtor_id"],
+                "tip": "komentar",
+                "objava_id": komentar.objava_id,
+                "sporocilo": f"{ime} je komentiral tvojo objavo"
+            }).execute()
+    except:
+        pass  # notifikacija ne sme blokirati komentarja
 
     return result.data[0]
 
