@@ -20,7 +20,7 @@ FRI Forum je full-stack spletna aplikacija, razvita v okviru predmeta **Razvoj i
 - Glasovanje (upvote/downvote) na objavah in komentarjih
 - Iskanje in filtriranje objav po kategorijah
 - Sortiranje objav (najnovejše / najboljše)
-- Obvestila (notifikacije) ob novem komentarju
+- Obvestila (notifikacije) ob novem komentarju na objavi
 - Ogled in urejanje profilov uporabnikov
 - Prijavljanje neprimernih vsebin
 - Admin panel za upravljanje vsebine
@@ -33,8 +33,8 @@ FRI Forum je full-stack spletna aplikacija, razvita v okviru predmeta **Razvoj i
 
 | Vloga | Pravice |
 |-------|---------|
-| Uporabnik | Objavljanje, komentiranje, glasovanje, prijavljanje |
-| Moderator | + Brisanje objav/komentarjev, reševanje prijav |
+| Uporabnik | Objavljanje, komentiranje, glasovanje, prijavljanje vsebin |
+| Moderator | + Brisanje objav in komentarjev, reševanje prijav |
 | Admin | + Upravljanje uporabnikov, kategorij, vseh vsebin |
 
 ---
@@ -67,9 +67,11 @@ FRI Forum je full-stack spletna aplikacija, razvita v okviru predmeta **Razvoj i
 cd backend
 python -m venv venv
 venv\Scripts\activate  # Windows
+source venv/bin/activate  # Mac/Linux
 pip install -r requirements.txt
 uvicorn main:app --reload
 ```
+
 Backend bo dostopen na `http://localhost:8000`  
 Swagger dokumentacija: `http://localhost:8000/docs`
 
@@ -79,16 +81,21 @@ cd frontend
 npm install
 npm run dev
 ```
+
 Frontend bo dostopen na `http://localhost:5173`
 
 ### Okolijske spremenljivke
 Ustvarite `backend/.env`:
+```
 SUPABASE_URL=https://xxxx.supabase.co
 SUPABASE_KEY=your_anon_key
 SECRET_KEY=your_secret_key
+```
+
 ---
 
 ## Struktura projekta
+```
 fri_forum/
 ├── backend/
 │   ├── routers/
@@ -100,31 +107,47 @@ fri_forum/
 │   │   ├── admin.py
 │   │   ├── prijave.py
 │   │   ├── notifikacije.py
-│   │   └── ...
+│   │   ├── priloge.py
+│   │   └── priloge_komentarjev.py
 │   ├── main.py
 │   ├── database.py
 │   ├── dependencies.py
 │   └── requirements.txt
 └── frontend/
-├── src/
-│   ├── components/
-│   │   ├── Navbar.jsx
-│   │   ├── PostCard.jsx
-│   │   ├── NotificationsModal.jsx
-│   │   └── ...
-│   ├── pages/
-│   │   ├── Home.jsx
-│   │   ├── admin/
-│   │   └── ...
-│   └── ...
-└── package.json
+    ├── src/
+    │   ├── components/
+    │   │   ├── Navbar.jsx
+    │   │   ├── PostCard.jsx
+    │   │   ├── PostList.jsx
+    │   │   ├── SearchBar.jsx
+    │   │   ├── NotificationsModal.jsx
+    │   │   ├── ProfileModal.jsx
+    │   │   ├── CreatePostModal.jsx
+    │   │   └── ReportModal.jsx
+    │   ├── pages/
+    │   │   ├── Home.jsx
+    │   │   ├── Login.jsx
+    │   │   ├── Register.jsx
+    │   │   ├── ObjavaDetail.jsx
+    │   │   └── admin/
+    │   │       ├── AdminLayout.jsx
+    │   │       ├── AdminObjave.jsx
+    │   │       ├── AdminKomentarji.jsx
+    │   │       ├── AdminKategorije.jsx
+    │   │       ├── AdminPrijave.jsx
+    │   │       └── AdminUsers.jsx
+    │   └── ...
+    └── package.json
+```
+
 ---
 
 ## Varnost
-- JWT avtentikacija
-- Row Level Security (RLS) na notifikacijah
+- JWT avtentikacija preko Supabase
+- Row Level Security (RLS) na občutljivih tabelah
 - Rate limiting na prijavi (5 poskusov/minuto)
 - Validacija vlog na vsakem zaščitenem endpointu
+- Blokiranje uporabnikov z admin pravicami
 
 ---
 
