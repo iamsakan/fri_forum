@@ -10,6 +10,7 @@ export default function Navbar({ setQuery, refreshPosts }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [inicialke, setInicialke] = useState("?");
   const [openNotifications, setOpenNotifications] = useState(false);
+  const [neprebrane, setNeprebrane] = useState(0);
 
   const checkAuth = () => {
     const token = localStorage.getItem("token");
@@ -18,8 +19,20 @@ export default function Navbar({ setQuery, refreshPosts }) {
     if (ime) setInicialke(ime.slice(0, 2).toUpperCase());
   };
 
+  const fetchNeprebrane = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    fetch("https://friforum-production.up.railway.app/notifikacije/", {
+      headers: { Authorization: "Bearer " + token }
+    })
+      .then(res => res.json())
+      .then(data => setNeprebrane(data.filter(n => !n.prebrana).length));
+  };
+
   useEffect(() => {
     checkAuth();
+    fetchNeprebrane();
+    const interval = setInterval(fetchNeprebrane, 30000);
     window.addEventListener("storage", checkAuth);
     
     const token = localStorage.getItem("token");
@@ -37,7 +50,10 @@ export default function Navbar({ setQuery, refreshPosts }) {
       });
     }
     
-    return () => window.removeEventListener("storage", checkAuth);
+    return () => {
+      window.removeEventListener("storage", checkAuth);
+      clearInterval(interval);
+  };
 }, []);
 
   const handleLogin = () => (window.location.href = "/login");
@@ -95,6 +111,25 @@ export default function Navbar({ setQuery, refreshPosts }) {
                   <span className="text-lg leading-none">+</span>
                   Nova objava
                 </button>
+
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      setOpenNotifications(true);
+                      setNeprebrane(0);
+                    }}
+                    className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition cursor-pointer"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                  </button>
+                  {neprebrane > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center leading-none">
+                      {neprebrane}
+                    </span>
+                  )}
+                </div>
 
                 <div
                   onClick={() => setOpenProfile(true)}
