@@ -79,6 +79,7 @@ export default function Navbar({ setQuery, refreshPosts }) {
   };
 
   const isAdmin = localStorage.getItem("vloga") === "admin";
+  const isModerator = localStorage.getItem("vloga") === "moderator";
 
   return (
     <>
@@ -109,12 +110,12 @@ export default function Navbar({ setQuery, refreshPosts }) {
             {isLoggedIn ? (
               <>
                 {/* Desktop only */}
-                {isAdmin && (
-                  <a
-                    href="/admin/objave"
+                {(isAdmin || isModerator) && (
+  
+                  <a href="/admin/objave"
                     className="hidden sm:inline-flex text-sm px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:border-gray-400 transition"
                   >
-                    Admin
+                    {isModerator ? "Moderator" : "Admin"}
                   </a>
                 )}
                 <button
@@ -175,12 +176,12 @@ export default function Navbar({ setQuery, refreshPosts }) {
                       >
                         <span className="text-base font-medium">+</span> Nova objava
                       </button>
-                      {isAdmin && (
-                        <a
-                          href="/admin/objave"
+                      {(isAdmin || isModerator) && (
+  
+                        <a href="/admin/objave"
                           className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition border-b border-gray-100"
                         >
-                          Admin panel
+                          {isModerator ? "Moderator panel" : "Admin panel"}
                         </a>
                       )}
                       <button
