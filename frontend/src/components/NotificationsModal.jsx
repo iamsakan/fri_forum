@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function NotificationsModal({ open, setOpen }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!open) return;
@@ -70,9 +72,10 @@ export default function NotificationsModal({ open, setOpen }) {
             notifications.map((n) => (
               <div
                 key={n.id}
-                className={`px-4 py-3 border-b border-gray-100 last:border-0 text-sm ${
-                  !n.prebrana ? "bg-blue-50" : ""
-                }`}
+                onClick={() => { if (n.objava_id) { setOpen(false); navigate(`/objava/${n.objava_id}`); } }}
+                className={`px-4 py-3 border-b border-gray-100 last:border-0 text-sm transition ${
+                  n.objava_id ? "cursor-pointer hover:bg-gray-50" : ""
+                } ${!n.prebrana ? "bg-blue-50 hover:bg-blue-100" : ""}`}
               >
                 <div className="flex items-start gap-2">
                   <div className="w-2 h-2 rounded-full mt-1.5 shrink-0"
@@ -82,6 +85,11 @@ export default function NotificationsModal({ open, setOpen }) {
                     <p className="text-gray-800">{n.sporocilo}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{casObjave(n.cas)}</p>
                   </div>
+                  {n.objava_id && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-gray-300 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
                 </div>
               </div>
             ))
