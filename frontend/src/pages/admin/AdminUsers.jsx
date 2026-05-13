@@ -45,65 +45,83 @@ export default function AdminUsers() {
   }, []);
 
   return (
-    <div>
-      <h1 className="text-xl font-bold mb-4">Uporabniki</h1>
-
-      {users.map((u) => (
-        <div key={u.id} className="bg-white p-3 border mb-2 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <span>{u.uporabnisko_ime}</span>
-            {u.vloga === "blokiran" && (
-              <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Blokiran</span>
-            )}
-            {u.vloga === "admin" && (
-              <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">Admin</span>
-            )}
-            {u.vloga === "moderator" && (
-              <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">Moderator</span>
-            )}
-          </div>
-
-          {confirmId === u.id ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Si prepričan?</span>
-              <button onClick={() => block(u.id)} className="text-sm px-2 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">Da</button>
-              <button onClick={() => setConfirmId(null)} className="text-sm px-2 py-1 border border-gray-200 rounded-lg hover:bg-gray-50 transition">Ne</button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              {u.vloga !== "blokiran" && u.vloga !== "admin" && u.uporabnisko_ime !== currentUsername && (
-                <select
-                  value={u.vloga}
-                  onChange={(e) => changeRole(u.id, e.target.value)}
-                  className="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:outline-none"
-                >
-                  <option value="uporabnik">Uporabnik</option>
-                  <option value="moderator">Moderator</option>
-                  <option value="admin">Admin</option>
-                </select>
-              )}
-              {u.vloga === "blokiran" ? (
-                <button
-                  onClick={() => unblock(u.id)}
-                  className="text-green-600 text-sm hover:underline"
-                >
-                  Odblokiraj
-                </button>
-              ) : u.vloga === "admin" || u.uporabnisko_ime === currentUsername ? (
-                null
-              ) : (
-                <button
-                  onClick={() => setConfirmId(u.id)}
-                  className="text-red-500 text-sm hover:underline"
-                >
-                  Blokiraj
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
-      <Toast sporocila={sporocila} odstraniSporocilo={odstraniSporocilo} />
+  <div>
+    <div className="flex items-center justify-between mb-5">
+      <h1 className="text-lg font-semibold text-gray-900">Uporabniki</h1>
+      <span className="text-xs text-gray-400 bg-white border border-gray-200 rounded-full px-3 py-1">
+        {users.length} uporabnikov
+      </span>
     </div>
-  );
+
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-gray-100">
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Uporabnik</th>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Status</th>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Vloga</th>
+            <th className="text-right px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Dejanja</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((u) => {
+            const inicialke = u.uporabnisko_ime.slice(0, 2).toUpperCase();
+            return (
+              <tr key={u.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition">
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center text-xs font-semibold shrink-0">
+                      {inicialke}
+                    </div>
+                    <span className="font-medium text-gray-900">{u.uporabnisko_ime}</span>
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  {u.vloga === "blokiran" ? (
+                    <span className="text-xs font-medium bg-red-50 text-red-700 px-2 py-0.5 rounded-full">Blokiran</span>
+                  ) : (
+                    <span className="text-xs font-medium bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Aktiven</span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  {u.vloga === "admin" ? (
+                    <span className="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">Admin</span>
+                  ) : u.vloga === "blokiran" || u.uporabnisko_ime === currentUsername ? (
+                    <span className="text-gray-300">—</span>
+                  ) : (
+                    <select
+                      value={u.vloga}
+                      onChange={(e) => changeRole(u.id, e.target.value)}
+                      className="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:outline-none cursor-pointer hover:border-gray-300 transition"
+                    >
+                      <option value="uporabnik">Uporabnik</option>
+                      <option value="moderator">Moderator</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  {confirmId === u.id ? (
+                    <div className="flex items-center justify-end gap-2">
+                      <span className="text-xs text-gray-500">Si prepričan?</span>
+                      <button onClick={() => block(u.id)} className="text-xs px-2.5 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition cursor-pointer">Da</button>
+                      <button onClick={() => setConfirmId(null)} className="text-xs px-2.5 py-1 border border-gray-200 rounded-lg hover:bg-gray-50 transition cursor-pointer">Ne</button>
+                    </div>
+                  ) : u.vloga === "blokiran" ? (
+                    <button onClick={() => unblock(u.id)} className="text-xs text-green-600 hover:bg-green-50 px-2.5 py-1 rounded-lg transition cursor-pointer">Odblokiraj</button>
+                  ) : u.vloga === "admin" || u.uporabnisko_ime === currentUsername ? (
+                    <span className="text-gray-300 text-xs">—</span>
+                  ) : (
+                    <button onClick={() => setConfirmId(u.id)} className="text-xs text-red-500 hover:bg-red-50 px-2.5 py-1 rounded-lg transition cursor-pointer">Blokiraj</button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+    <Toast sporocila={sporocila} odstraniSporocilo={odstraniSporocilo} />
+  </div>
+);
 }
