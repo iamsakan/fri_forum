@@ -13,11 +13,14 @@ export default function Navbar({ setQuery, refreshPosts }) {
   const [neprebrane, setNeprebrane] = useState(0);
   const [burgerOpen, setBurgerOpen] = useState(false);
   const burgerRef = useRef(null);
+  const [vloga, setVloga] = useState(localStorage.getItem("vloga") || "");
 
   const checkAuth = () => {
     const token = localStorage.getItem("token");
     const ime = localStorage.getItem("uporabnisko_ime");
+    const v = localStorage.getItem("vloga");
     setIsLoggedIn(!!token);
+    setVloga(v || "");
     if (ime) setInicialke(ime.slice(0, 2).toUpperCase());
   };
 
@@ -78,9 +81,6 @@ export default function Navbar({ setQuery, refreshPosts }) {
     window.location.href = "/";
   };
 
-  const isAdmin = localStorage.getItem("vloga") === "admin";
-  const isModerator = localStorage.getItem("vloga") === "moderator";
-
   return (
     <>
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -110,12 +110,12 @@ export default function Navbar({ setQuery, refreshPosts }) {
             {isLoggedIn ? (
               <>
                 {/* Desktop only */}
-                {(isAdmin || isModerator) && (
+                {(vloga === "admin" || vloga === "moderator") && (
   
                   <a href="/admin/objave"
                     className="hidden sm:inline-flex text-sm px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:border-gray-400 transition"
                   >
-                    {isModerator ? "Moderator" : "Admin"}
+                    {vloga === "moderator" ? "Moderator" : "Admin"}
                   </a>
                 )}
                 <button
@@ -176,12 +176,12 @@ export default function Navbar({ setQuery, refreshPosts }) {
                       >
                         <span className="text-base font-medium">+</span> Nova objava
                       </button>
-                      {(isAdmin || isModerator) && (
+                      {(vloga === "admin" || vloga === "moderator") && (
   
                         <a href="/admin/objave"
                           className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition border-b border-gray-100"
                         >
-                          {isModerator ? "Moderator panel" : "Admin panel"}
+                          {vloga === "moderator" ? "Moderator panel" : "Admin panel"}
                         </a>
                       )}
                       <button
